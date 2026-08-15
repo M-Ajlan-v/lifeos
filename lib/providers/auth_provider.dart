@@ -17,6 +17,8 @@ class AuthProvider with ChangeNotifier {
   User? get currentUser => _currentUser;
   bool get isLoggedIn => _isLoggedIn;
 
+  Object? get userId => null;
+
   Future<void> checkLoginStatus() async {
     _isLoading = true;
     notifyListeners();
