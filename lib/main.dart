@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lifeos/providers/account_provider.dart';
+import 'package:lifeos/providers/category_provider.dart';
 import 'package:lifeos/providers/contact_provider.dart';
 import 'package:lifeos/providers/reminder_provider.dart';
+import 'package:lifeos/providers/transaction_provider.dart';
 import 'package:lifeos/services/account_service.dart';
+import 'package:lifeos/services/category_service.dart';
 import 'package:lifeos/services/contact_service.dart';
 import 'package:lifeos/services/reminder_service.dart';
+import 'package:lifeos/services/transaction_service.dart';
 import 'package:provider/provider.dart';
 import 'database/app_database.dart';
 import 'services/auth_service.dart';
@@ -21,8 +25,16 @@ Future<void> main() async {
   database = AppDatabase();
 
   final authService = AuthService(database);
+  final categoryService = CategoryService(database);
   final contactService = ContactService(database);
   final accountService = AccountService(database);
+  final transactionService = TransactionService(
+    database,
+    contactService,
+    accountService,
+    categoryService,
+  );
+
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -41,11 +53,25 @@ Future<void> main() async {
         Provider<AppDatabase>.value(value: database),
         Provider<AuthService>.value(value: authService),
         Provider<FlutterLocalNotificationsPlugin>.value(value: notificationsPlugin),
-        Provider<ReminderService>(
-          create: (_) => ReminderService(database, notificationsPlugin),
-        ),
+        Provider<CategoryService>.value(value: categoryService),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authService)..checkLoginStatus(),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, CategoryProvider?>(
+          create: (_) => null,
+          update: (context, auth, previous) {
+            if (!auth.isLoggedIn) return null;
+            final userId = auth.userId;
+            if (userId == null) return null;
+            if (previous != null && previous.userId == userId) return previous;
+            return CategoryProvider(
+              categoryService: context.read<CategoryService>(),
+              userId: userId,
+            );
+          },
+        ),
+        Provider<ReminderService>(
+          create: (_) => ReminderService(database, notificationsPlugin),
         ),
         ChangeNotifierProxyProvider<AuthProvider, ReminderProvider?>(
           create: (_) => null,
@@ -94,6 +120,21 @@ Future<void> main() async {
             if (previous != null && previous.userId == userId) return previous;
             return AccountProvider(
               accountService: context.read<AccountService>(),
+              userId: userId,
+            );
+          },
+        ),
+                Provider<TransactionService>.value(value: transactionService),
+
+        ChangeNotifierProxyProvider<AuthProvider, TransactionProvider?>(
+          create: (_) => null,
+          update: (context, auth, previous) {
+            if (!auth.isLoggedIn) return null;
+            final userId = auth.userId;
+            if (userId == null) return null;
+            if (previous != null && previous.userId == userId) return previous;
+            return TransactionProvider(
+              transactionService: context.read<TransactionService>(),
               userId: userId,
             );
           },

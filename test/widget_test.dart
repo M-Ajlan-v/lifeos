@@ -8,23 +8,77 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:lifeos/main.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:lifeos/database/app_database.dart';
+import 'package:lifeos/services/account_service.dart';
+import 'package:lifeos/services/category_service.dart';
+import 'package:lifeos/services/contact_service.dart';
+import 'package:lifeos/services/transaction_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('rejects expense when it exceeds account balance', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    final now = DateTime.now().toUtc();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    final userId = await db.into(db.users).insert(
+      UsersCompanion.insert(
+        username: 'user-${DateTime.now().millisecondsSinceEpoch}',
+        password: 'pass',
+        displayName: Value('Tester'),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    final accountId = await db.into(db.accounts).insert(
+      AccountsCompanion.insert(
+        userId: userId,
+        name: 'Main Account',
+        type: 'BANK',
+        openingBalance: 1000,
+        isActive: const Value(1),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final categoryId = await db.into(db.categories).insert(
+      CategoriesCompanion.insert(
+        userId: userId,
+        name: 'Food',
+        type: 'EXPENSE',
+        isActive: const Value(1),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    final service = TransactionService(
+      db,
+      ContactService(db),
+      AccountService(db),
+      CategoryService(db),
+    );
+
+    expect(
+      () => service.createTransaction(
+        userId: userId,
+        type: 'EXPENSE',
+        amount: 1500,
+        accountId: accountId,
+        categoryId: categoryId,
+        transactionDate: now,
+      ),
+      throwsA(
+        isA<Exception>().having(
+          (e) => e.toString(),
+          'message',
+          contains('Cannot add expense'),
+        ),
+      ),
+    );
   });
 }
