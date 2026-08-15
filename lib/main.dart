@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:lifeos/providers/account_provider.dart';
 import 'package:lifeos/providers/contact_provider.dart';
 import 'package:lifeos/providers/reminder_provider.dart';
+import 'package:lifeos/services/account_service.dart';
 import 'package:lifeos/services/contact_service.dart';
 import 'package:lifeos/services/reminder_service.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +22,7 @@ Future<void> main() async {
 
   final authService = AuthService(database);
   final contactService = ContactService(database);
+  final accountService = AccountService(database);
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -76,6 +79,21 @@ Future<void> main() async {
 
             return ContactProvider(
               contactService: context.read<ContactService>(),
+              userId: userId,
+            );
+          },
+        ),
+                Provider<AccountService>.value(value: accountService),
+
+        ChangeNotifierProxyProvider<AuthProvider, AccountProvider?>(
+          create: (_) => null,
+          update: (context, auth, previous) {
+            if (!auth.isLoggedIn) return null;
+            final userId = auth.userId;
+            if (userId == null) return null;
+            if (previous != null && previous.userId == userId) return previous;
+            return AccountProvider(
+              accountService: context.read<AccountService>(),
               userId: userId,
             );
           },
