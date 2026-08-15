@@ -39,6 +39,22 @@ class TransactionService {
   }
 
   // -------------------------------------------------------
+  // Watch only TRANSFER transactions (for Transfers screen)
+  // -------------------------------------------------------
+  Stream<List<Transaction>> watchTransferTransactions(int userId) {
+    return (db.select(db.transactions)
+          ..where((t) =>
+              t.userId.equals(userId) &
+              t.isActive.equals(1) &
+              t.type.equals('TRANSFER'))
+          ..orderBy([
+            (t) => OrderingTerm.desc(t.transactionDate),
+            (t) => OrderingTerm.desc(t.createdAt),
+          ]))
+        .watch();
+  }
+
+  // -------------------------------------------------------
   // Get single transaction
   // -------------------------------------------------------
   Future<Transaction?> getTransactionById({

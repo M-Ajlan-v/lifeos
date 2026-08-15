@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:lifeos/providers/transaction_provider.dart';
 import 'package:lifeos/services/category_service.dart';
 import 'package:lifeos/database/app_database.dart';
+import 'package:lifeos/screens/transactions/transaction_detail_screen.dart';
 import 'add_income_expense_screen.dart';
 
 class CashbookScreen extends StatelessWidget {
@@ -124,6 +125,14 @@ class _TransactionTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TransactionDetailScreen(transactionId: transaction.id),
+            ),
+          );
+        },
         leading: CircleAvatar(
           backgroundColor: color.withOpacity(0.15),
           child: Icon(

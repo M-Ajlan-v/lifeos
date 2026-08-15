@@ -4,6 +4,8 @@ import 'package:lifeos/providers/contact_provider.dart';
 import 'package:lifeos/database/app_database.dart';
 import 'package:lifeos/constants/contact_balance_type.dart';
 import 'package:lifeos/services/contact_service.dart';
+import 'package:lifeos/screens/contact/give_got_screen.dart';
+import 'package:lifeos/screens/transactions/transaction_detail_screen.dart';
 import 'edit_contact_screen.dart';
 
 class ContactDetailsScreen extends StatefulWidget {
@@ -101,6 +103,27 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
     }
   }
 
+  Future<void> _openQuickTransaction(String type) async {
+    final contact = await _contactFuture;
+    if (contact == null || !mounted) return;
+
+    final refreshed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GiveGotScreen(
+          type: type,
+          contactId: contact.id,
+        ),
+      ),
+    );
+
+    if (refreshed == true && mounted) {
+      setState(() {
+        _loadContact();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final contactProvider = context.watch<ContactProvider?>();
@@ -149,7 +172,10 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
             return const Center(child: Text('Contact not found'));
           }
 
-          return _ContactDetailsBody(contact: contact);
+          return _ContactDetailsBody(
+            contact: contact,
+            onQuickTransaction: _openQuickTransaction,
+          );
         },
       ),
     );
@@ -158,8 +184,12 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
 
 class _ContactDetailsBody extends StatelessWidget {
   final Contact contact;
+  final void Function(String type) onQuickTransaction;
 
-  const _ContactDetailsBody({required this.contact});
+  const _ContactDetailsBody({
+    required this.contact,
+    required this.onQuickTransaction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -228,6 +258,34 @@ class _ContactDetailsBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => onQuickTransaction('GAVE'),
+                icon: const Icon(Icons.arrow_upward),
+                label: const Text('Gave'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => onQuickTransaction('GOT'),
+                icon: const Icon(Icons.arrow_downward),
+                label: const Text('Got'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 28),
         const Text(
           'Contact Information',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -254,19 +312,131 @@ class _ContactDetailsBody extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-        const Card(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-            child: Center(
-              child: Text(
-                'Transaction history will appear here\nwhen GAVE / GOT is ready',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
+        _TransactionHistoryWidget(contact: contact),
+      ],
+    );
+  }
+}
+
+class _TransactionHistoryWidget extends StatelessWidget {
+  final Contact contact;
+
+  const _TransactionHistoryWidget({required this.contact});
+
+  @override
+  Widget build(BuildContext context) {
+    final contactService = context.read<ContactService>();
+    final contactProvider = context.watch<ContactProvider?>();
+
+    if (contactProvider == null) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder<List<Transaction>>(
+      stream: contactService.watchContactTransactions(
+        userId: contactProvider.userId,
+        contactId: contact.id,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final transactions = snapshot.data ?? [];
+
+        if (transactions.isEmpty) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+              child: Center(
+                child: Text(
+                  'No transactions yet',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
               ),
             ),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: transactions.length,
+          itemBuilder: (context, index) {
+            final tx = transactions[index];
+            return _TransactionTile(transaction: tx);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _TransactionTile extends StatelessWidget {
+  final Transaction transaction;
+
+  const _TransactionTile({required this.transaction});
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isGave = transaction.type == 'GAVE';
+    final color = isGave ? Colors.red : Colors.green;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TransactionDetailScreen(
+                transactionId: transaction.id,
+              ),
+            ),
+          );
+        },
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.2),
+          child: Icon(
+            isGave ? Icons.arrow_upward : Icons.arrow_downward,
+            color: color,
           ),
         ),
-      ],
+        title: Text(
+          '${isGave ? 'Gave' : 'Got'} ₹${transaction.amount}',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_formatDate(transaction.transactionDate)),
+            if (transaction.description != null &&
+                transaction.description!.isNotEmpty)
+              Text(
+                transaction.description!,
+                style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+          ],
+        ),
+        trailing: Text(
+          isGave ? '-' : '+',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ),
     );
   }
 }

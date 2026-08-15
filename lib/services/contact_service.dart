@@ -197,6 +197,46 @@ class ContactService {
   }
 
     // -------------------------------------------------------
+  // Get all GAVE/GOT transactions for a contact
+  // -------------------------------------------------------
+  Future<List<Transaction>> getContactTransactions({
+    required int userId,
+    required int contactId,
+  }) {
+    return (db.select(db.transactions)
+          ..where((t) =>
+              t.userId.equals(userId) &
+              t.contactId.equals(contactId) &
+              t.isActive.equals(1) &
+              (t.type.equals('GAVE') | t.type.equals('GOT')))
+          ..orderBy([
+            (t) => OrderingTerm.desc(t.transactionDate),
+            (t) => OrderingTerm.desc(t.createdAt),
+          ]))
+        .get();
+  }
+
+  // -------------------------------------------------------
+  // Watch all GAVE/GOT transactions for a contact (stream)
+  // -------------------------------------------------------
+  Stream<List<Transaction>> watchContactTransactions({
+    required int userId,
+    required int contactId,
+  }) {
+    return (db.select(db.transactions)
+          ..where((t) =>
+              t.userId.equals(userId) &
+              t.contactId.equals(contactId) &
+              t.isActive.equals(1) &
+              (t.type.equals('GAVE') | t.type.equals('GOT')))
+          ..orderBy([
+            (t) => OrderingTerm.desc(t.transactionDate),
+            (t) => OrderingTerm.desc(t.createdAt),
+          ]))
+        .watch();
+  }
+
+  // -------------------------------------------------------
   // Update contact profile (name, phone, description only)
   // -------------------------------------------------------
   Future<void> updateContactProfile({

@@ -7,9 +7,14 @@ import 'package:lifeos/providers/account_provider.dart';
 import 'package:lifeos/database/app_database.dart';
 
 class AddIncomeExpenseScreen extends StatefulWidget {
-  final String type; // 'INCOME' or 'EXPENSE'
+  final String type; // 'INCOME', 'EXPENSE', 'GAVE', 'GOT'
+  final int? contactId;
 
-  const AddIncomeExpenseScreen({super.key, required this.type});
+  const AddIncomeExpenseScreen({
+    super.key,
+    required this.type,
+    this.contactId,
+  });
 
   @override
   State<AddIncomeExpenseScreen> createState() => _AddIncomeExpenseScreenState();
@@ -125,6 +130,7 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
     final userId = txProvider?.userId;
 
     final isIncome = widget.type == 'INCOME';
+    final isContactTransaction = widget.type == 'GAVE' || widget.type == 'GOT';
 
     return Scaffold(
       appBar: AppBar(
@@ -180,7 +186,7 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
               const SizedBox(height: 16),
 
               // Category (with suggestions)
-              if (userId != null && categoryProvider != null)
+              if (!isContactTransaction && userId != null && categoryProvider != null)
                 StreamBuilder<List<Category>>(
                   stream: categoryProvider.categoriesStream(widget.type),
                   builder: (context, snapshot) {

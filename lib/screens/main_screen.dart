@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lifeos/screens/transfers/transfer_list_screen.dart';
+import 'package:lifeos/screens/transactions/transaction_list_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'auth/login_screen.dart';
@@ -20,7 +22,9 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     DashboardScreen(),
     ContactScreen(),
+    TransactionListScreen(),
     CashbookScreen(),
+    TransferListScreen(),
     AccountScreen(),
   ];
 
@@ -36,8 +40,12 @@ class _MainScreenState extends State<MainScreen> {
               : _currentIndex == 1
                   ? 'Contact'
                   : _currentIndex == 2
-                      ? 'Cashbook'
-                      : 'Account',
+                      ? 'All Transactions'
+                      : _currentIndex == 3
+                          ? 'Cashbook'
+                          : _currentIndex == 4
+                              ? 'Transfers'
+                              : 'Account',
         ),
         actions: [
           IconButton(
@@ -76,8 +84,16 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Contact',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Transactions',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.book),
             label: 'Cashbook',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.swap_horiz),
+            label: 'Transfers',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet),
