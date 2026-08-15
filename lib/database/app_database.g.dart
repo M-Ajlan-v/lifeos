@@ -981,6 +981,30 @@ class $ContactsTable extends Contacts with TableInfo<$ContactsTable, Contact> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _currentAmountMeta = const VerificationMeta(
+    'currentAmount',
+  );
+  @override
+  late final GeneratedColumn<int> currentAmount = GeneratedColumn<int>(
+    'current_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _currentTypeMeta = const VerificationMeta(
+    'currentType',
+  );
+  @override
+  late final GeneratedColumn<String> currentType = GeneratedColumn<String>(
+    'current_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('SETTLED'),
+  );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
   );
@@ -1034,6 +1058,8 @@ class $ContactsTable extends Contacts with TableInfo<$ContactsTable, Contact> {
     phone,
     openingAmount,
     openingType,
+    currentAmount,
+    currentType,
     description,
     isActive,
     createdAt,
@@ -1098,6 +1124,24 @@ class $ContactsTable extends Contacts with TableInfo<$ContactsTable, Contact> {
     } else if (isInserting) {
       context.missing(_openingTypeMeta);
     }
+    if (data.containsKey('current_amount')) {
+      context.handle(
+        _currentAmountMeta,
+        currentAmount.isAcceptableOrUnknown(
+          data['current_amount']!,
+          _currentAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('current_type')) {
+      context.handle(
+        _currentTypeMeta,
+        currentType.isAcceptableOrUnknown(
+          data['current_type']!,
+          _currentTypeMeta,
+        ),
+      );
+    }
     if (data.containsKey('description')) {
       context.handle(
         _descriptionMeta,
@@ -1135,10 +1179,6 @@ class $ContactsTable extends Contacts with TableInfo<$ContactsTable, Contact> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-    {userId, phone},
-  ];
-  @override
   Contact map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Contact(
@@ -1165,6 +1205,14 @@ class $ContactsTable extends Contacts with TableInfo<$ContactsTable, Contact> {
       openingType: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}opening_type'],
+      )!,
+      currentAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_amount'],
+      )!,
+      currentType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}current_type'],
       )!,
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -1198,6 +1246,8 @@ class Contact extends DataClass implements Insertable<Contact> {
   final String phone;
   final int openingAmount;
   final String openingType;
+  final int currentAmount;
+  final String currentType;
   final String? description;
   final int isActive;
   final DateTime createdAt;
@@ -1209,6 +1259,8 @@ class Contact extends DataClass implements Insertable<Contact> {
     required this.phone,
     required this.openingAmount,
     required this.openingType,
+    required this.currentAmount,
+    required this.currentType,
     this.description,
     required this.isActive,
     required this.createdAt,
@@ -1223,6 +1275,8 @@ class Contact extends DataClass implements Insertable<Contact> {
     map['phone'] = Variable<String>(phone);
     map['opening_amount'] = Variable<int>(openingAmount);
     map['opening_type'] = Variable<String>(openingType);
+    map['current_amount'] = Variable<int>(currentAmount);
+    map['current_type'] = Variable<String>(currentType);
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
     }
@@ -1240,6 +1294,8 @@ class Contact extends DataClass implements Insertable<Contact> {
       phone: Value(phone),
       openingAmount: Value(openingAmount),
       openingType: Value(openingType),
+      currentAmount: Value(currentAmount),
+      currentType: Value(currentType),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
@@ -1261,6 +1317,8 @@ class Contact extends DataClass implements Insertable<Contact> {
       phone: serializer.fromJson<String>(json['phone']),
       openingAmount: serializer.fromJson<int>(json['openingAmount']),
       openingType: serializer.fromJson<String>(json['openingType']),
+      currentAmount: serializer.fromJson<int>(json['currentAmount']),
+      currentType: serializer.fromJson<String>(json['currentType']),
       description: serializer.fromJson<String?>(json['description']),
       isActive: serializer.fromJson<int>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1277,6 +1335,8 @@ class Contact extends DataClass implements Insertable<Contact> {
       'phone': serializer.toJson<String>(phone),
       'openingAmount': serializer.toJson<int>(openingAmount),
       'openingType': serializer.toJson<String>(openingType),
+      'currentAmount': serializer.toJson<int>(currentAmount),
+      'currentType': serializer.toJson<String>(currentType),
       'description': serializer.toJson<String?>(description),
       'isActive': serializer.toJson<int>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1291,6 +1351,8 @@ class Contact extends DataClass implements Insertable<Contact> {
     String? phone,
     int? openingAmount,
     String? openingType,
+    int? currentAmount,
+    String? currentType,
     Value<String?> description = const Value.absent(),
     int? isActive,
     DateTime? createdAt,
@@ -1302,6 +1364,8 @@ class Contact extends DataClass implements Insertable<Contact> {
     phone: phone ?? this.phone,
     openingAmount: openingAmount ?? this.openingAmount,
     openingType: openingType ?? this.openingType,
+    currentAmount: currentAmount ?? this.currentAmount,
+    currentType: currentType ?? this.currentType,
     description: description.present ? description.value : this.description,
     isActive: isActive ?? this.isActive,
     createdAt: createdAt ?? this.createdAt,
@@ -1319,6 +1383,12 @@ class Contact extends DataClass implements Insertable<Contact> {
       openingType: data.openingType.present
           ? data.openingType.value
           : this.openingType,
+      currentAmount: data.currentAmount.present
+          ? data.currentAmount.value
+          : this.currentAmount,
+      currentType: data.currentType.present
+          ? data.currentType.value
+          : this.currentType,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -1337,6 +1407,8 @@ class Contact extends DataClass implements Insertable<Contact> {
           ..write('phone: $phone, ')
           ..write('openingAmount: $openingAmount, ')
           ..write('openingType: $openingType, ')
+          ..write('currentAmount: $currentAmount, ')
+          ..write('currentType: $currentType, ')
           ..write('description: $description, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
@@ -1353,6 +1425,8 @@ class Contact extends DataClass implements Insertable<Contact> {
     phone,
     openingAmount,
     openingType,
+    currentAmount,
+    currentType,
     description,
     isActive,
     createdAt,
@@ -1368,6 +1442,8 @@ class Contact extends DataClass implements Insertable<Contact> {
           other.phone == this.phone &&
           other.openingAmount == this.openingAmount &&
           other.openingType == this.openingType &&
+          other.currentAmount == this.currentAmount &&
+          other.currentType == this.currentType &&
           other.description == this.description &&
           other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
@@ -1381,6 +1457,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
   final Value<String> phone;
   final Value<int> openingAmount;
   final Value<String> openingType;
+  final Value<int> currentAmount;
+  final Value<String> currentType;
   final Value<String?> description;
   final Value<int> isActive;
   final Value<DateTime> createdAt;
@@ -1392,6 +1470,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
     this.phone = const Value.absent(),
     this.openingAmount = const Value.absent(),
     this.openingType = const Value.absent(),
+    this.currentAmount = const Value.absent(),
+    this.currentType = const Value.absent(),
     this.description = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1404,6 +1484,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
     required String phone,
     this.openingAmount = const Value.absent(),
     required String openingType,
+    this.currentAmount = const Value.absent(),
+    this.currentType = const Value.absent(),
     this.description = const Value.absent(),
     this.isActive = const Value.absent(),
     required DateTime createdAt,
@@ -1421,6 +1503,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
     Expression<String>? phone,
     Expression<int>? openingAmount,
     Expression<String>? openingType,
+    Expression<int>? currentAmount,
+    Expression<String>? currentType,
     Expression<String>? description,
     Expression<int>? isActive,
     Expression<DateTime>? createdAt,
@@ -1433,6 +1517,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
       if (phone != null) 'phone': phone,
       if (openingAmount != null) 'opening_amount': openingAmount,
       if (openingType != null) 'opening_type': openingType,
+      if (currentAmount != null) 'current_amount': currentAmount,
+      if (currentType != null) 'current_type': currentType,
       if (description != null) 'description': description,
       if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
@@ -1447,6 +1533,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
     Value<String>? phone,
     Value<int>? openingAmount,
     Value<String>? openingType,
+    Value<int>? currentAmount,
+    Value<String>? currentType,
     Value<String?>? description,
     Value<int>? isActive,
     Value<DateTime>? createdAt,
@@ -1459,6 +1547,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
       phone: phone ?? this.phone,
       openingAmount: openingAmount ?? this.openingAmount,
       openingType: openingType ?? this.openingType,
+      currentAmount: currentAmount ?? this.currentAmount,
+      currentType: currentType ?? this.currentType,
       description: description ?? this.description,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
@@ -1487,6 +1577,12 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
     if (openingType.present) {
       map['opening_type'] = Variable<String>(openingType.value);
     }
+    if (currentAmount.present) {
+      map['current_amount'] = Variable<int>(currentAmount.value);
+    }
+    if (currentType.present) {
+      map['current_type'] = Variable<String>(currentType.value);
+    }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
@@ -1511,6 +1607,8 @@ class ContactsCompanion extends UpdateCompanion<Contact> {
           ..write('phone: $phone, ')
           ..write('openingAmount: $openingAmount, ')
           ..write('openingType: $openingType, ')
+          ..write('currentAmount: $currentAmount, ')
+          ..write('currentType: $currentType, ')
           ..write('description: $description, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
@@ -6162,6 +6260,8 @@ typedef $$ContactsTableCreateCompanionBuilder = ContactsCompanion Function({
   required String phone,
   Value<int> openingAmount,
   required String openingType,
+  Value<int> currentAmount,
+  Value<String> currentType,
   Value<String?> description,
   Value<int> isActive,
   required DateTime createdAt,
@@ -6174,6 +6274,8 @@ typedef $$ContactsTableUpdateCompanionBuilder = ContactsCompanion Function({
   Value<String> phone,
   Value<int> openingAmount,
   Value<String> openingType,
+  Value<int> currentAmount,
+  Value<String> currentType,
   Value<String?> description,
   Value<int> isActive,
   Value<DateTime> createdAt,
@@ -6251,6 +6353,16 @@ class $$ContactsTableFilterComposer
 
   ColumnFilters<String> get openingType => $composableBuilder(
     column: $table.openingType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentAmount => $composableBuilder(
+    column: $table.currentAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currentType => $composableBuilder(
+    column: $table.currentType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6357,6 +6469,16 @@ class $$ContactsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get currentAmount => $composableBuilder(
+    column: $table.currentAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currentType => $composableBuilder(
+    column: $table.currentType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => ColumnOrderings(column),
@@ -6426,6 +6548,16 @@ class $$ContactsTableAnnotationComposer
 
   GeneratedColumn<String> get openingType => $composableBuilder(
     column: $table.openingType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentAmount => $composableBuilder(
+    column: $table.currentAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currentType => $composableBuilder(
+    column: $table.currentType,
     builder: (column) => column,
   );
 
@@ -6526,6 +6658,8 @@ class $$ContactsTableTableManager
                 Value<String> phone = const Value.absent(),
                 Value<int> openingAmount = const Value.absent(),
                 Value<String> openingType = const Value.absent(),
+                Value<int> currentAmount = const Value.absent(),
+                Value<String> currentType = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<int> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -6537,6 +6671,8 @@ class $$ContactsTableTableManager
                 phone: phone,
                 openingAmount: openingAmount,
                 openingType: openingType,
+                currentAmount: currentAmount,
+                currentType: currentType,
                 description: description,
                 isActive: isActive,
                 createdAt: createdAt,
@@ -6550,6 +6686,8 @@ class $$ContactsTableTableManager
                 required String phone,
                 Value<int> openingAmount = const Value.absent(),
                 required String openingType,
+                Value<int> currentAmount = const Value.absent(),
+                Value<String> currentType = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<int> isActive = const Value.absent(),
                 required DateTime createdAt,
@@ -6561,6 +6699,8 @@ class $$ContactsTableTableManager
                 phone: phone,
                 openingAmount: openingAmount,
                 openingType: openingType,
+                currentAmount: currentAmount,
+                currentType: currentType,
                 description: description,
                 isActive: isActive,
                 createdAt: createdAt,

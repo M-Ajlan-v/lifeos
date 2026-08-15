@@ -8,13 +8,11 @@ class Contacts extends Table {
   TextColumn get phone => text()();
   IntColumn get openingAmount => integer().withDefault(const Constant(0))();
   TextColumn get openingType => text()();
+  IntColumn get currentAmount => integer().withDefault(const Constant(0))();
+  TextColumn get currentType => text().withDefault(const Constant('SETTLED'))();
   TextColumn get description => text().nullable()();
   IntColumn get isActive => integer().withDefault(const Constant(1))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
-  @override
-  List<Set<Column>> get uniqueKeys => [
-    {userId, phone},
-  ];
 }

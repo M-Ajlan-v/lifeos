@@ -28,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -43,7 +43,7 @@ class AppDatabase extends _$AppDatabase {
           CREATE TRIGGER IF NOT EXISTS users_updated_at
           AFTER UPDATE ON users
           BEGIN
-            UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE users SET updated_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id;
           END;
         ''');
 
@@ -51,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
           CREATE TRIGGER IF NOT EXISTS accounts_updated_at
           AFTER UPDATE ON accounts
           BEGIN
-            UPDATE accounts SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE accounts SET updated_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id;
           END;
         ''');
 
@@ -59,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
           CREATE TRIGGER IF NOT EXISTS contacts_updated_at
           AFTER UPDATE ON contacts
           BEGIN
-            UPDATE contacts SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE contacts SET updated_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id;
           END;
         ''');
 
@@ -67,7 +67,7 @@ class AppDatabase extends _$AppDatabase {
           CREATE TRIGGER IF NOT EXISTS categories_updated_at
           AFTER UPDATE ON categories
           BEGIN
-            UPDATE categories SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE categories SET updated_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id;
           END;
         ''');
 
@@ -75,7 +75,7 @@ class AppDatabase extends _$AppDatabase {
           CREATE TRIGGER IF NOT EXISTS transactions_updated_at
           AFTER UPDATE ON transactions
           BEGIN
-            UPDATE transactions SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE transactions SET updated_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id;
           END;
         ''');
 
@@ -83,7 +83,7 @@ class AppDatabase extends _$AppDatabase {
           CREATE TRIGGER IF NOT EXISTS features_updated_at
           AFTER UPDATE ON features
           BEGIN
-            UPDATE features SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE features SET updated_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id;
           END;
         ''');
 
@@ -91,7 +91,7 @@ class AppDatabase extends _$AppDatabase {
           CREATE TRIGGER IF NOT EXISTS reminders_updated_at
           AFTER UPDATE ON reminders
           BEGIN
-            UPDATE reminders SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE reminders SET updated_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id;
           END;
         ''');
 
@@ -161,6 +161,122 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE INDEX IF NOT EXISTS idx_reminders_entity ON reminders(feature_key, entity_id)');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_notiflog_user_status ON notification_log(user_id, status)');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_notiflog_reminder ON notification_log(reminder_id)');
+
+        // NEW for schema 2: active-only unique phone per user
+        await customStatement('''
+          CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_user_phone_active
+          ON contacts(user_id, phone)
+          WHERE is_active = 1
+        ''');
+      },
+         onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          // 1. Add the two new columns using raw SQL (avoids the IntColumn / GeneratedColumn type error)
+          await customStatement(
+            'ALTER TABLE contacts ADD COLUMN current_amount INTEGER NOT NULL DEFAULT 0',
+          );
+          await customStatement(
+            "ALTER TABLE contacts ADD COLUMN current_type TEXT NOT NULL DEFAULT 'SETTLED'",
+          );
+
+          // 2. Backfill currentAmount / currentType from opening + active GAVE/GOT
+          await customStatement('''
+            UPDATE contacts
+            SET
+              current_amount = (
+                CASE
+                  WHEN opening_type = 'WILL_GET' THEN opening_amount
+                  WHEN opening_type = 'WILL_GIVE' THEN -opening_amount
+                  ELSE 0
+                END
+                + COALESCE((
+                  SELECT SUM(amount)
+                  FROM transactions t
+                  WHERE t.contact_id = contacts.id
+                    AND t.user_id = contacts.user_id
+                    AND t.is_active = 1
+                    AND t.type = 'GAVE'
+                ), 0)
+                - COALESCE((
+                  SELECT SUM(amount)
+                  FROM transactions t
+                  WHERE t.contact_id = contacts.id
+                    AND t.user_id = contacts.user_id
+                    AND t.is_active = 1
+                    AND t.type = 'GOT'
+                ), 0)
+              ),
+              current_type = (
+                CASE
+                  WHEN (
+                    CASE
+                      WHEN opening_type = 'WILL_GET' THEN opening_amount
+                      WHEN opening_type = 'WILL_GIVE' THEN -opening_amount
+                      ELSE 0
+                    END
+                    + COALESCE((
+                      SELECT SUM(amount)
+                      FROM transactions t
+                      WHERE t.contact_id = contacts.id
+                        AND t.user_id = contacts.user_id
+                        AND t.is_active = 1
+                        AND t.type = 'GAVE'
+                    ), 0)
+                    - COALESCE((
+                      SELECT SUM(amount)
+                      FROM transactions t
+                      WHERE t.contact_id = contacts.id
+                        AND t.user_id = contacts.user_id
+                        AND t.is_active = 1
+                        AND t.type = 'GOT'
+                    ), 0)
+                  ) > 0 THEN 'WILL_GET'
+                  WHEN (
+                    CASE
+                      WHEN opening_type = 'WILL_GET' THEN opening_amount
+                      WHEN opening_type = 'WILL_GIVE' THEN -opening_amount
+                      ELSE 0
+                    END
+                    + COALESCE((
+                      SELECT SUM(amount)
+                      FROM transactions t
+                      WHERE t.contact_id = contacts.id
+                        AND t.user_id = contacts.user_id
+                        AND t.is_active = 1
+                        AND t.type = 'GAVE'
+                    ), 0)
+                    - COALESCE((
+                      SELECT SUM(amount)
+                      FROM transactions t
+                      WHERE t.contact_id = contacts.id
+                        AND t.user_id = contacts.user_id
+                        AND t.is_active = 1
+                        AND t.type = 'GOT'
+                    ), 0)
+                  ) < 0 THEN 'WILL_GIVE'
+                  ELSE 'SETTLED'
+                END
+              )
+          ''');
+
+          // 3. Make current_amount always positive
+          await customStatement('''
+            UPDATE contacts
+            SET current_amount = ABS(current_amount)
+          ''');
+
+          // 4. Drop old full unique indexes (common names Drift may have created)
+          await customStatement('DROP INDEX IF EXISTS contacts_user_id_phone_key');
+          await customStatement('DROP INDEX IF EXISTS contacts_user_id_phone_unique');
+          await customStatement('DROP INDEX IF EXISTS idx_contacts_user_phone');
+
+          // 5. Create the new partial unique index (only active contacts)
+          await customStatement('''
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_user_phone_active
+            ON contacts(user_id, phone)
+            WHERE is_active = 1
+          ''');
+        }
       },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');
