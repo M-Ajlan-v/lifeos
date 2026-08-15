@@ -191,6 +191,9 @@ class TransactionService {
   // -------------------------------------------------------
   // Soft delete a transaction + reverse balances
   // -------------------------------------------------------
+  // -------------------------------------------------------
+// Soft delete a transaction + reverse balances (atomic)
+// -------------------------------------------------------
   Future<void> softDeleteTransaction({
     required int userId,
     required int transactionId,
@@ -199,6 +202,7 @@ class TransactionService {
       userId: userId,
       transactionId: transactionId,
     );
+
     if (tx == null) {
       throw Exception('Transaction not found');
     }
@@ -207,12 +211,7 @@ class TransactionService {
     }
 
     await db.transaction(() async {
-      // Mark inactive
-      await (db.update(db.transactions)
-            ..where((t) => t.id.equals(transactionId)))
-          .write(const TransactionsCompanion(isActive: Value(0)));
-
-      // Reverse account balance
+      // 1. Reverse account balance FIRST
       if (tx.type == 'INCOME' || tx.type == 'GOT') {
         await _updateAccountBalance(tx.accountId, -tx.amount);
       } else if (tx.type == 'EXPENSE' || tx.type == 'GAVE') {
@@ -224,12 +223,22 @@ class TransactionService {
         }
       }
 
-      // Recalculate contact if needed
+      // 2. Mark inactive + recalculate contact if needed
       if ((tx.type == 'GAVE' || tx.type == 'GOT') && tx.contactId != null) {
+        // Mark inactive first so recalculate excludes this transaction
+        await (db.update(db.transactions)
+              ..where((t) => t.id.equals(transactionId)))
+            .write(const TransactionsCompanion(isActive: Value(0)));
+
         await contactService.recalculateContactBalance(
           userId: userId,
           contactId: tx.contactId!,
         );
+      } else {
+        // Non-contact transactions
+        await (db.update(db.transactions)
+              ..where((t) => t.id.equals(transactionId)))
+            .write(const TransactionsCompanion(isActive: Value(0)));
       }
     });
   }

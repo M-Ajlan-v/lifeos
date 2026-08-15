@@ -8,8 +8,21 @@ import 'package:lifeos/services/category_service.dart';
 import 'package:lifeos/services/contact_service.dart';
 import 'transaction_detail_screen.dart';
 
-class TransactionListScreen extends StatelessWidget {
+class TransactionListScreen extends StatefulWidget {
   const TransactionListScreen({super.key});
+
+  @override
+  State<TransactionListScreen> createState() => _TransactionListScreenState();
+}
+
+class _TransactionListScreenState extends State<TransactionListScreen> {
+  int _refreshKey = 0;
+
+  void _forceRefresh() {
+    setState(() {
+      _refreshKey++;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,51 +39,76 @@ class TransactionListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('All Transactions'),
       ),
-      body: _TransactionListBody(txProvider: txProvider),
+      body: _TransactionListBody(
+        key: ValueKey(_refreshKey),
+        txProvider: txProvider,
+        onRefresh: () async {
+          _forceRefresh();
+          await Future.delayed(const Duration(milliseconds: 400));
+        },
+      ),
     );
   }
 }
 
 class _TransactionListBody extends StatelessWidget {
   final TransactionProvider txProvider;
+  final Future<void> Function() onRefresh;
 
-  const _TransactionListBody({required this.txProvider});
+  const _TransactionListBody({
+    super.key,
+    required this.txProvider,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
     final txService = context.read<TransactionService>();
 
-    return StreamBuilder<List<Transaction>>(
-      stream: txService.watchActiveTransactions(txProvider.userId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: StreamBuilder<List<Transaction>>(
+        stream: txService.watchActiveTransactions(txProvider.userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-        final transactions = snapshot.data ?? [];
+          final transactions = snapshot.data ?? [];
 
-        if (transactions.isEmpty) {
-          return Center(
-            child: Text(
-              'No transactions yet',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+          if (transactions.isEmpty) {
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Center(
+                    child: Text(
+                      'No transactions yet',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            itemCount: transactions.length,
+            itemBuilder: (context, index) {
+              final tx = transactions[index];
+              return _TransactionTile(transaction: tx);
+            },
           );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: transactions.length,
-          itemBuilder: (context, index) {
-            final tx = transactions[index];
-            return _TransactionTile(transaction: tx);
-          },
-        );
-      },
+        },
+      ),
     );
   }
 }

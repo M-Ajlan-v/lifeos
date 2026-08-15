@@ -15,6 +15,14 @@ class TransferListScreen extends StatefulWidget {
 }
 
 class _TransferListScreenState extends State<TransferListScreen> {
+  int _refreshKey = 0;
+
+  void _forceRefresh() {
+    setState(() {
+      _refreshKey++;
+    });
+  }
+
   Future<void> _openAddTransfer() async {
     final result = await Navigator.push<bool>(
       context,
@@ -24,9 +32,7 @@ class _TransferListScreenState extends State<TransferListScreen> {
     );
 
     if (result == true && mounted) {
-      setState(() {
-        // The stream will automatically update through watchTransferTransactions
-      });
+      _forceRefresh();
     }
   }
 
@@ -42,10 +48,14 @@ class _TransferListScreenState extends State<TransferListScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transfers'),
+      body: _TransferListBody(
+        key: ValueKey(_refreshKey),
+        txProvider: txProvider,
+        onRefresh: () async {
+          _forceRefresh();
+          await Future.delayed(const Duration(milliseconds: 400));
+        },
       ),
-      body: _TransferListBody(txProvider: txProvider),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTransfer,
         tooltip: 'Add Transfer',
@@ -57,44 +67,62 @@ class _TransferListScreenState extends State<TransferListScreen> {
 
 class _TransferListBody extends StatelessWidget {
   final TransactionProvider txProvider;
+  final Future<void> Function() onRefresh;
 
-  const _TransferListBody({required this.txProvider});
+  const _TransferListBody({
+    super.key,
+    required this.txProvider,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
     final txService = context.read<TransactionService>();
 
-    return StreamBuilder<List<Transaction>>(
-      stream: txService.watchTransferTransactions(txProvider.userId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: StreamBuilder<List<Transaction>>(
+        stream: txService.watchTransferTransactions(txProvider.userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-        final transfers = snapshot.data ?? [];
+          final transfers = snapshot.data ?? [];
 
-        if (transfers.isEmpty) {
-          return Center(
-            child: Text(
-              'No transfers yet',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+          if (transfers.isEmpty) {
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Center(
+                    child: Text(
+                      'No transfers yet',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            itemCount: transfers.length,
+            itemBuilder: (context, index) {
+              final tx = transfers[index];
+              return _TransferTile(transfer: tx);
+            },
           );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: transfers.length,
-          itemBuilder: (context, index) {
-            final tx = transfers[index];
-            return _TransferTile(transfer: tx);
-          },
-        );
-      },
+        },
+      ),
     );
   }
 }

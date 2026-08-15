@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lifeos/database/app_database.dart';
-import 'package:lifeos/services/account_service.dart';
-import 'package:lifeos/services/category_service.dart';
-import 'package:lifeos/services/contact_service.dart';
 import 'package:lifeos/services/transaction_service.dart';
+import 'package:lifeos/services/account_service.dart';
+import 'package:lifeos/services/contact_service.dart';
+import 'package:lifeos/services/category_service.dart';
 import 'package:lifeos/providers/transaction_provider.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
@@ -36,6 +36,50 @@ class TransactionDetailScreen extends StatelessWidget {
     return '${date.day}/${date.month}/${date.year}';
   }
 
+  Future<void> _confirmAndDelete(BuildContext context) async {
+    final txProvider = context.read<TransactionProvider?>();
+    if (txProvider == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Transaction'),
+        content: const Text(
+          'Are you sure you want to delete this transaction?\n\n'
+          'Account balances will be reversed and this cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final success = await txProvider.softDeleteTransaction(transactionId);
+
+    if (!context.mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transaction deleted')),
+      );
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(txProvider.error ?? 'Failed to delete')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final txService = context.read<TransactionService>();
@@ -54,6 +98,13 @@ class TransactionDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction Details'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Delete',
+            onPressed: () => _confirmAndDelete(context),
+          ),
+        ],
       ),
       body: FutureBuilder<Transaction?>(
         future: txService.getTransactionById(
@@ -72,6 +123,15 @@ class TransactionDetailScreen extends StatelessWidget {
           final transaction = txSnapshot.data;
           if (transaction == null) {
             return const Center(child: Text('Transaction not found'));
+          }
+
+          if (transaction.isActive == 0) {
+            return const Center(
+              child: Text(
+                'This transaction has already been deleted.',
+                style: TextStyle(color: Colors.grey),
+              ),
+            );
           }
 
           final fromAccountFuture = accountService.getAccountById(
@@ -163,7 +223,8 @@ class TransactionDetailScreen extends StatelessWidget {
                   label: 'Contact Phone',
                   value: contact?.phone ?? 'No phone available',
                 ));
-              } else if (transaction.type == 'INCOME' || transaction.type == 'EXPENSE') {
+              } else if (transaction.type == 'INCOME' ||
+                  transaction.type == 'EXPENSE') {
                 rows.add(_DetailRow(
                   label: 'Category',
                   value: category?.name ?? 'Unknown category',

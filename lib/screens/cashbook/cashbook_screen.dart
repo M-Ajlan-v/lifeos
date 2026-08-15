@@ -6,8 +6,21 @@ import 'package:lifeos/database/app_database.dart';
 import 'package:lifeos/screens/transactions/transaction_detail_screen.dart';
 import 'add_income_expense_screen.dart';
 
-class CashbookScreen extends StatelessWidget {
+class CashbookScreen extends StatefulWidget {
   const CashbookScreen({super.key});
+
+  @override
+  State<CashbookScreen> createState() => _CashbookScreenState();
+}
+
+class _CashbookScreenState extends State<CashbookScreen> {
+  int _refreshKey = 0;
+
+  void _forceRefresh() {
+    setState(() {
+      _refreshKey++;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,38 +33,55 @@ class CashbookScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      body: StreamBuilder<List<Transaction>>(
-        stream: txProvider.cashbookStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final transactions = snapshot.data ?? [];
-
-          if (transactions.isEmpty) {
-            return const Center(
-              child: Text(
-                'No income or expense yet.\nTap + to add one.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: transactions.length,
-            itemBuilder: (context, index) {
-              final tx = transactions[index];
-              return _TransactionTile(transaction: tx);
-            },
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          _forceRefresh();
+          await Future.delayed(const Duration(milliseconds: 400));
         },
+        child: StreamBuilder<List<Transaction>>(
+          key: ValueKey(_refreshKey),
+          stream: txProvider.cashbookStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+
+            final transactions = snapshot.data ?? [];
+
+            if (transactions.isEmpty) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: const Center(
+                      child: Text(
+                        'No income or expense yet.\nTap + to add one.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: transactions.length,
+              itemBuilder: (context, index) {
+                final tx = transactions[index];
+                return _TransactionTile(transaction: tx);
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddOptions(context),
@@ -76,7 +106,8 @@ class CashbookScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const AddIncomeExpenseScreen(type: 'INCOME'),
+                      builder: (_) =>
+                          const AddIncomeExpenseScreen(type: 'INCOME'),
                     ),
                   );
                 },
@@ -89,7 +120,8 @@ class CashbookScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const AddIncomeExpenseScreen(type: 'EXPENSE'),
+                      builder: (_) =>
+                          const AddIncomeExpenseScreen(type: 'EXPENSE'),
                     ),
                   );
                 },
@@ -129,7 +161,8 @@ class _TransactionTile extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => TransactionDetailScreen(transactionId: transaction.id),
+              builder: (_) =>
+                  TransactionDetailScreen(transactionId: transaction.id),
             ),
           );
         },

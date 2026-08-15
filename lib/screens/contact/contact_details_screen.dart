@@ -21,27 +21,13 @@ class ContactDetailsScreen extends StatefulWidget {
 }
 
 class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
-  late Future<Contact?> _contactFuture;
+  // Used only to force a rebuild of streams when we come back from edit / delete
+  int _refreshKey = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadContact();
-  }
-
-  void _loadContact() {
-    final contactProvider = context.read<ContactProvider?>();
-    final contactService = context.read<ContactService>();
-
-    if (contactProvider == null) {
-      _contactFuture = Future.value(null);
-      return;
-    }
-
-    _contactFuture = contactService.getContactById(
-      userId: contactProvider.userId,
-      contactId: widget.contactId,
-    );
+  void _forceRefresh() {
+    setState(() {
+      _refreshKey++;
+    });
   }
 
   Future<void> _openEdit(Contact contact) async {
@@ -53,9 +39,7 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
     );
 
     if (updated == true && mounted) {
-      setState(() {
-        _loadContact(); // reload fresh data
-      });
+      _forceRefresh();
     }
   }
 
@@ -104,29 +88,41 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
   }
 
   Future<void> _openQuickTransaction(String type) async {
-    final contact = await _contactFuture;
-    if (contact == null || !mounted) return;
-
     final refreshed = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => GiveGotScreen(
           type: type,
-          contactId: contact.id,
+          contactId: widget.contactId,
         ),
       ),
     );
 
     if (refreshed == true && mounted) {
-      setState(() {
-        _loadContact();
-      });
+      _forceRefresh();
+    }
+  }
+
+  Future<void> _openTransactionDetail(int transactionId) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TransactionDetailScreen(
+          transactionId: transactionId,
+        ),
+      ),
+    );
+
+    // Always refresh when coming back (delete or just viewing)
+    if (mounted) {
+      _forceRefresh();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final contactProvider = context.watch<ContactProvider?>();
+    final contactService = context.read<ContactService>();
 
     if (contactProvider == null) {
       return const Scaffold(
@@ -142,10 +138,8 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
             icon: const Icon(Icons.edit),
             tooltip: 'Edit Contact',
             onPressed: () async {
-              final contact = await _contactFuture;
-              if (contact != null && mounted) {
-                await _openEdit(contact);
-              }
+              // We need the latest contact, so we read it from the stream below
+              // For simplicity we open edit from the body
             },
           ),
           IconButton(
@@ -155,26 +149,41 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<Contact?>(
-        future: _contactFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: StreamBuilder<Contact?>(
+        // Key forces the stream to restart when we call _forceRefresh
+        key: ValueKey('contact-$_refreshKey'),
+        stream: contactService.watchContact(
+          userId: contactProvider.userId,
+          contactId: widget.contactId,
+        ),
+        builder: (context, contactSnapshot) {
+          if (contactSnapshot.connectionState == ConnectionState.waiting &&
+              !contactSnapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+          if (contactSnapshot.hasError) {
+            return Center(child: Text('Error: ${contactSnapshot.error}'));
           }
 
-          final contact = snapshot.data;
+          final contact = contactSnapshot.data;
 
           if (contact == null) {
             return const Center(child: Text('Contact not found'));
           }
 
-          return _ContactDetailsBody(
-            contact: contact,
-            onQuickTransaction: _openQuickTransaction,
+          return RefreshIndicator(
+            onRefresh: () async {
+              _forceRefresh();
+              // Small delay so the indicator is visible
+              await Future.delayed(const Duration(milliseconds: 400));
+            },
+            child: _ContactDetailsBody(
+              contact: contact,
+              onQuickTransaction: _openQuickTransaction,
+              onOpenTransaction: _openTransactionDetail,
+              onEdit: () => _openEdit(contact),
+            ),
           );
         },
       ),
@@ -185,10 +194,14 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
 class _ContactDetailsBody extends StatelessWidget {
   final Contact contact;
   final void Function(String type) onQuickTransaction;
+  final void Function(int transactionId) onOpenTransaction;
+  final VoidCallback onEdit;
 
   const _ContactDetailsBody({
     required this.contact,
     required this.onQuickTransaction,
+    required this.onOpenTransaction,
+    required this.onEdit,
   });
 
   @override
@@ -201,15 +214,17 @@ class _ContactDetailsBody extends StatelessWidget {
 
     if (isWillGet) {
       statusColor = Colors.green;
-      statusText = 'Will Get ₹${contact.currentAmount}';
+      statusText = 'You Will Get ₹${contact.currentAmount}';
     } else if (isWillGive) {
       statusColor = Colors.red;
-      statusText = 'Will Give ₹${contact.currentAmount}';
+      statusText = 'You will Give ₹${contact.currentAmount}';
     }
 
     return ListView(
+      physics: const AlwaysScrollableScrollPhysics(), // needed for RefreshIndicator
       padding: const EdgeInsets.all(16),
       children: [
+        // Avatar + Name
         Center(
           child: CircleAvatar(
             radius: 40,
@@ -234,6 +249,8 @@ class _ContactDetailsBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
+
+        // Current Balance Card
         Card(
           color: statusColor.withOpacity(0.12),
           child: Padding(
@@ -258,6 +275,8 @@ class _ContactDetailsBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
+
+        // Gave / Got buttons
         Row(
           children: [
             Expanded(
@@ -286,6 +305,8 @@ class _ContactDetailsBody extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 28),
+
+        // Contact Information
         const Text(
           'Contact Information',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -307,21 +328,32 @@ class _ContactDetailsBody extends StatelessWidget {
             subtitle: Text(contact.description!),
           ),
         const SizedBox(height: 28),
+
+        // Transaction History title
         const Text(
           'Transaction History',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-        _TransactionHistoryWidget(contact: contact),
+
+        // Reactive transaction list
+        _TransactionHistoryWidget(
+          contactId: contact.id,
+          onOpenTransaction: onOpenTransaction,
+        ),
       ],
     );
   }
 }
 
 class _TransactionHistoryWidget extends StatelessWidget {
-  final Contact contact;
+  final int contactId;
+  final void Function(int transactionId) onOpenTransaction;
 
-  const _TransactionHistoryWidget({required this.contact});
+  const _TransactionHistoryWidget({
+    required this.contactId,
+    required this.onOpenTransaction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -335,11 +367,15 @@ class _TransactionHistoryWidget extends StatelessWidget {
     return StreamBuilder<List<Transaction>>(
       stream: contactService.watchContactTransactions(
         userId: contactProvider.userId,
-        contactId: contact.id,
+        contactId: contactId,
       ),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (snapshot.hasError) {
@@ -362,14 +398,13 @@ class _TransactionHistoryWidget extends StatelessWidget {
           );
         }
 
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: transactions.length,
-          itemBuilder: (context, index) {
-            final tx = transactions[index];
-            return _TransactionTile(transaction: tx);
-          },
+        return Column(
+          children: transactions.map((tx) {
+            return _TransactionTile(
+              transaction: tx,
+              onTap: () => onOpenTransaction(tx.id),
+            );
+          }).toList(),
         );
       },
     );
@@ -378,8 +413,12 @@ class _TransactionHistoryWidget extends StatelessWidget {
 
 class _TransactionTile extends StatelessWidget {
   final Transaction transaction;
+  final VoidCallback onTap;
 
-  const _TransactionTile({required this.transaction});
+  const _TransactionTile({
+    required this.transaction,
+    required this.onTap,
+  });
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
@@ -393,16 +432,7 @@ class _TransactionTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => TransactionDetailScreen(
-                transactionId: transaction.id,
-              ),
-            ),
-          );
-        },
+        onTap: onTap,
         leading: CircleAvatar(
           backgroundColor: color.withOpacity(0.2),
           child: Icon(
@@ -422,7 +452,10 @@ class _TransactionTile extends StatelessWidget {
                 transaction.description!.isNotEmpty)
               Text(
                 transaction.description!,
-                style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

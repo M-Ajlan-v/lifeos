@@ -171,7 +171,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
                   children: [
                     Expanded(
                       child: ChoiceChip(
-                        label: const Text('Got (Will Get)'),
+                        label: const Text('Give'),
                         selected: _openingType == ContactBalanceType.willGet,
                         onSelected: (selected) {
                           setState(() {
@@ -185,7 +185,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ChoiceChip(
-                        label: const Text('Gave (Will Give)'),
+                        label: const Text('Got'),
                         selected: _openingType == ContactBalanceType.willGive,
                         onSelected: (selected) {
                           setState(() {
