@@ -10,7 +10,6 @@ import 'screens/main_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
-import 'package:flutter_timezone/flutter_timezone.dart';
 late AppDatabase database;
 
 Future<void> main() async {
@@ -21,19 +20,9 @@ Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize timezone database and set Indian Standard Time (IST)
   tzdata.initializeTimeZones();
-  try {
-    final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-    // Handle deprecated timezone names (e.g., Asia/Calcutta -> Asia/Kolkata)
-    var tzName = timezoneInfo.identifier;
-    if (tzName == 'Asia/Calcutta') {
-      tzName = 'Asia/Kolkata';
-    }
-    tz.setLocalLocation(tz.getLocation(tzName));
-  } catch (e) {
-    // Fallback to UTC if timezone is invalid
-    tz.setLocalLocation(tz.UTC);
-  }
+  tz.setLocalLocation(tz.getLocation('Asia/Kolkata')); // IST for India-specific app
 
   final notificationsPlugin = FlutterLocalNotificationsPlugin();
   const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
