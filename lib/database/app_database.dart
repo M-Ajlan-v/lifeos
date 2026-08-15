@@ -8,6 +8,8 @@ import 'tables/contacts_table.dart';
 import 'tables/categories_table.dart';
 import 'tables/transactions_table.dart';
 import 'tables/features_table.dart';
+import 'tables/reminders_table.dart';
+import 'tables/notification_log_table.dart';
 
 part 'app_database.g.dart';
 
@@ -18,6 +20,8 @@ part 'app_database.g.dart';
   Categories,
   Transactions,
   Features,
+  Reminders,
+  NotificationLog,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
@@ -83,6 +87,14 @@ class AppDatabase extends _$AppDatabase {
           END;
         ''');
 
+        await customStatement('''
+          CREATE TRIGGER IF NOT EXISTS reminders_updated_at
+          AFTER UPDATE ON reminders
+          BEGIN
+            UPDATE reminders SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+          END;
+        ''');
+
         // Transaction integrity triggers
         await customStatement('''
           CREATE TRIGGER IF NOT EXISTS validate_transaction_insert
@@ -143,6 +155,12 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE INDEX IF NOT EXISTS idx_contacts_active ON contacts(user_id) WHERE is_active = 1');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_categories_active ON categories(user_id) WHERE is_active = 1');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_transactions_active_date ON transactions(user_id, transaction_date) WHERE is_active = 1');
+
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_reminders_user ON reminders(user_id)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_reminders_active ON reminders(user_id) WHERE is_active = 1');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_reminders_entity ON reminders(feature_key, entity_id)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_notiflog_user_status ON notification_log(user_id, status)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_notiflog_reminder ON notification_log(reminder_id)');
       },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');
