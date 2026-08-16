@@ -1,7 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'tables/todos_events_table.dart';
+import 'tables/habits_table.dart';
+import 'tables/habit_history_table.dart';
+import 'tables/user_settings_table.dart';
 import 'tables/users_table.dart';
 import 'tables/accounts_table.dart';
 import 'tables/contacts_table.dart';
@@ -22,13 +25,17 @@ part 'app_database.g.dart';
   Features,
   Reminders,
   NotificationLog,
+  TodosEvents,      // ← new
+  Habits,           // ← new
+  HabitHistory,     // ← new
+  UserSettings,     // ← new
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -169,7 +176,7 @@ class AppDatabase extends _$AppDatabase {
           WHERE is_active = 1
         ''');
       },
-         onUpgrade: (Migrator m, int from, int to) async {
+    onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           // 1. Add the two new columns using raw SQL (avoids the IntColumn / GeneratedColumn type error)
           await customStatement(
@@ -277,6 +284,32 @@ class AppDatabase extends _$AppDatabase {
             WHERE is_active = 1
           ''');
         }
+
+        // ========== NEW CODE FOR SCHEMA 3 ==========
+                if (from < 3) {
+          // Create the four new tables
+          await m.createTable(todosEvents);
+          await m.createTable(habits);
+          await m.createTable(habitHistory);
+          await m.createTable(userSettings);
+
+          // Only add the NEW columns that did not exist before
+          // (fired_at already exists as DateTime column from the old schema)
+          await customStatement('ALTER TABLE notification_log ADD COLUMN source_type TEXT');
+          await customStatement('ALTER TABLE notification_log ADD COLUMN source_id INTEGER');
+          await customStatement('ALTER TABLE notification_log ADD COLUMN title TEXT');
+          await customStatement('ALTER TABLE notification_log ADD COLUMN body TEXT');
+
+          // Indexes for the new tables
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_todos_events_user ON todos_events(user_id)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_todos_events_type ON todos_events(user_id, type)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_habits_user ON habits(user_id)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_habits_active ON habits(user_id) WHERE is_active = 1');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_habit_history_habit ON habit_history(habit_id)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_habit_history_date ON habit_history(habit_id, date)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_user_settings_user ON user_settings(user_id)');
+        }
+        // ========== END OF NEW CODE ==========
       },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');

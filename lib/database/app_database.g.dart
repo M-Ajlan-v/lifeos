@@ -4560,6 +4560,46 @@ class $NotificationLogTable extends NotificationLog
       'REFERENCES users (id)',
     ),
   );
+  static const VerificationMeta _sourceTypeMeta = const VerificationMeta(
+    'sourceType',
+  );
+  @override
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+    'source_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceIdMeta = const VerificationMeta(
+    'sourceId',
+  );
+  @override
+  late final GeneratedColumn<int> sourceId = GeneratedColumn<int>(
+    'source_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _reminderIdMeta = const VerificationMeta(
     'reminderId',
   );
@@ -4567,12 +4607,9 @@ class $NotificationLogTable extends NotificationLog
   late final GeneratedColumn<int> reminderId = GeneratedColumn<int>(
     'reminder_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES reminders (id)',
-    ),
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _scheduledForMeta = const VerificationMeta(
     'scheduledFor',
@@ -4581,9 +4618,9 @@ class $NotificationLogTable extends NotificationLog
   late final GeneratedColumn<DateTime> scheduledFor = GeneratedColumn<DateTime>(
     'scheduled_for',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _firedAtMeta = const VerificationMeta(
     'firedAt',
@@ -4613,14 +4650,18 @@ class $NotificationLogTable extends NotificationLog
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     userId,
+    sourceType,
+    sourceId,
+    title,
+    body,
     reminderId,
     scheduledFor,
     firedAt,
@@ -4650,13 +4691,35 @@ class $NotificationLogTable extends NotificationLog
     } else if (isInserting) {
       context.missing(_userIdMeta);
     }
+    if (data.containsKey('source_type')) {
+      context.handle(
+        _sourceTypeMeta,
+        sourceType.isAcceptableOrUnknown(data['source_type']!, _sourceTypeMeta),
+      );
+    }
+    if (data.containsKey('source_id')) {
+      context.handle(
+        _sourceIdMeta,
+        sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    }
     if (data.containsKey('reminder_id')) {
       context.handle(
         _reminderIdMeta,
         reminderId.isAcceptableOrUnknown(data['reminder_id']!, _reminderIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_reminderIdMeta);
     }
     if (data.containsKey('scheduled_for')) {
       context.handle(
@@ -4666,8 +4729,6 @@ class $NotificationLogTable extends NotificationLog
           _scheduledForMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_scheduledForMeta);
     }
     if (data.containsKey('fired_at')) {
       context.handle(
@@ -4686,8 +4747,6 @@ class $NotificationLogTable extends NotificationLog
         _createdAtMeta,
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
     }
     return context;
   }
@@ -4706,14 +4765,30 @@ class $NotificationLogTable extends NotificationLog
         DriftSqlType.int,
         data['${effectivePrefix}user_id'],
       )!,
+      sourceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_type'],
+      ),
+      sourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}source_id'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      ),
       reminderId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}reminder_id'],
-      )!,
+      ),
       scheduledFor: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}scheduled_for'],
-      )!,
+      ),
       firedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}fired_at'],
@@ -4725,7 +4800,7 @@ class $NotificationLogTable extends NotificationLog
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
-      )!,
+      ),
     );
   }
 
@@ -4739,32 +4814,58 @@ class NotificationLogData extends DataClass
     implements Insertable<NotificationLogData> {
   final int id;
   final int userId;
-  final int reminderId;
-  final DateTime scheduledFor;
+  final String? sourceType;
+  final int? sourceId;
+  final String? title;
+  final String? body;
+  final int? reminderId;
+  final DateTime? scheduledFor;
   final DateTime? firedAt;
   final String status;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   const NotificationLogData({
     required this.id,
     required this.userId,
-    required this.reminderId,
-    required this.scheduledFor,
+    this.sourceType,
+    this.sourceId,
+    this.title,
+    this.body,
+    this.reminderId,
+    this.scheduledFor,
     this.firedAt,
     required this.status,
-    required this.createdAt,
+    this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['user_id'] = Variable<int>(userId);
-    map['reminder_id'] = Variable<int>(reminderId);
-    map['scheduled_for'] = Variable<DateTime>(scheduledFor);
+    if (!nullToAbsent || sourceType != null) {
+      map['source_type'] = Variable<String>(sourceType);
+    }
+    if (!nullToAbsent || sourceId != null) {
+      map['source_id'] = Variable<int>(sourceId);
+    }
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || body != null) {
+      map['body'] = Variable<String>(body);
+    }
+    if (!nullToAbsent || reminderId != null) {
+      map['reminder_id'] = Variable<int>(reminderId);
+    }
+    if (!nullToAbsent || scheduledFor != null) {
+      map['scheduled_for'] = Variable<DateTime>(scheduledFor);
+    }
     if (!nullToAbsent || firedAt != null) {
       map['fired_at'] = Variable<DateTime>(firedAt);
     }
     map['status'] = Variable<String>(status);
-    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
     return map;
   }
 
@@ -4772,13 +4873,29 @@ class NotificationLogData extends DataClass
     return NotificationLogCompanion(
       id: Value(id),
       userId: Value(userId),
-      reminderId: Value(reminderId),
-      scheduledFor: Value(scheduledFor),
+      sourceType: sourceType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceType),
+      sourceId: sourceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceId),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value(title),
+      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+      reminderId: reminderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reminderId),
+      scheduledFor: scheduledFor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scheduledFor),
       firedAt: firedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(firedAt),
       status: Value(status),
-      createdAt: Value(createdAt),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
     );
   }
 
@@ -4790,11 +4907,15 @@ class NotificationLogData extends DataClass
     return NotificationLogData(
       id: serializer.fromJson<int>(json['id']),
       userId: serializer.fromJson<int>(json['userId']),
-      reminderId: serializer.fromJson<int>(json['reminderId']),
-      scheduledFor: serializer.fromJson<DateTime>(json['scheduledFor']),
+      sourceType: serializer.fromJson<String?>(json['sourceType']),
+      sourceId: serializer.fromJson<int?>(json['sourceId']),
+      title: serializer.fromJson<String?>(json['title']),
+      body: serializer.fromJson<String?>(json['body']),
+      reminderId: serializer.fromJson<int?>(json['reminderId']),
+      scheduledFor: serializer.fromJson<DateTime?>(json['scheduledFor']),
       firedAt: serializer.fromJson<DateTime?>(json['firedAt']),
       status: serializer.fromJson<String>(json['status']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
     );
   }
   @override
@@ -4803,35 +4924,53 @@ class NotificationLogData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'userId': serializer.toJson<int>(userId),
-      'reminderId': serializer.toJson<int>(reminderId),
-      'scheduledFor': serializer.toJson<DateTime>(scheduledFor),
+      'sourceType': serializer.toJson<String?>(sourceType),
+      'sourceId': serializer.toJson<int?>(sourceId),
+      'title': serializer.toJson<String?>(title),
+      'body': serializer.toJson<String?>(body),
+      'reminderId': serializer.toJson<int?>(reminderId),
+      'scheduledFor': serializer.toJson<DateTime?>(scheduledFor),
       'firedAt': serializer.toJson<DateTime?>(firedAt),
       'status': serializer.toJson<String>(status),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
     };
   }
 
   NotificationLogData copyWith({
     int? id,
     int? userId,
-    int? reminderId,
-    DateTime? scheduledFor,
+    Value<String?> sourceType = const Value.absent(),
+    Value<int?> sourceId = const Value.absent(),
+    Value<String?> title = const Value.absent(),
+    Value<String?> body = const Value.absent(),
+    Value<int?> reminderId = const Value.absent(),
+    Value<DateTime?> scheduledFor = const Value.absent(),
     Value<DateTime?> firedAt = const Value.absent(),
     String? status,
-    DateTime? createdAt,
+    Value<DateTime?> createdAt = const Value.absent(),
   }) => NotificationLogData(
     id: id ?? this.id,
     userId: userId ?? this.userId,
-    reminderId: reminderId ?? this.reminderId,
-    scheduledFor: scheduledFor ?? this.scheduledFor,
+    sourceType: sourceType.present ? sourceType.value : this.sourceType,
+    sourceId: sourceId.present ? sourceId.value : this.sourceId,
+    title: title.present ? title.value : this.title,
+    body: body.present ? body.value : this.body,
+    reminderId: reminderId.present ? reminderId.value : this.reminderId,
+    scheduledFor: scheduledFor.present ? scheduledFor.value : this.scheduledFor,
     firedAt: firedAt.present ? firedAt.value : this.firedAt,
     status: status ?? this.status,
-    createdAt: createdAt ?? this.createdAt,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
   );
   NotificationLogData copyWithCompanion(NotificationLogCompanion data) {
     return NotificationLogData(
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
+      sourceType: data.sourceType.present
+          ? data.sourceType.value
+          : this.sourceType,
+      sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
+      title: data.title.present ? data.title.value : this.title,
+      body: data.body.present ? data.body.value : this.body,
       reminderId: data.reminderId.present
           ? data.reminderId.value
           : this.reminderId,
@@ -4849,6 +4988,10 @@ class NotificationLogData extends DataClass
     return (StringBuffer('NotificationLogData(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
           ..write('reminderId: $reminderId, ')
           ..write('scheduledFor: $scheduledFor, ')
           ..write('firedAt: $firedAt, ')
@@ -4862,6 +5005,10 @@ class NotificationLogData extends DataClass
   int get hashCode => Object.hash(
     id,
     userId,
+    sourceType,
+    sourceId,
+    title,
+    body,
     reminderId,
     scheduledFor,
     firedAt,
@@ -4874,6 +5021,10 @@ class NotificationLogData extends DataClass
       (other is NotificationLogData &&
           other.id == this.id &&
           other.userId == this.userId &&
+          other.sourceType == this.sourceType &&
+          other.sourceId == this.sourceId &&
+          other.title == this.title &&
+          other.body == this.body &&
           other.reminderId == this.reminderId &&
           other.scheduledFor == this.scheduledFor &&
           other.firedAt == this.firedAt &&
@@ -4884,14 +5035,22 @@ class NotificationLogData extends DataClass
 class NotificationLogCompanion extends UpdateCompanion<NotificationLogData> {
   final Value<int> id;
   final Value<int> userId;
-  final Value<int> reminderId;
-  final Value<DateTime> scheduledFor;
+  final Value<String?> sourceType;
+  final Value<int?> sourceId;
+  final Value<String?> title;
+  final Value<String?> body;
+  final Value<int?> reminderId;
+  final Value<DateTime?> scheduledFor;
   final Value<DateTime?> firedAt;
   final Value<String> status;
-  final Value<DateTime> createdAt;
+  final Value<DateTime?> createdAt;
   const NotificationLogCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
+    this.sourceType = const Value.absent(),
+    this.sourceId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
     this.reminderId = const Value.absent(),
     this.scheduledFor = const Value.absent(),
     this.firedAt = const Value.absent(),
@@ -4901,18 +5060,23 @@ class NotificationLogCompanion extends UpdateCompanion<NotificationLogData> {
   NotificationLogCompanion.insert({
     this.id = const Value.absent(),
     required int userId,
-    required int reminderId,
-    required DateTime scheduledFor,
+    this.sourceType = const Value.absent(),
+    this.sourceId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
+    this.reminderId = const Value.absent(),
+    this.scheduledFor = const Value.absent(),
     this.firedAt = const Value.absent(),
     this.status = const Value.absent(),
-    required DateTime createdAt,
-  }) : userId = Value(userId),
-       reminderId = Value(reminderId),
-       scheduledFor = Value(scheduledFor),
-       createdAt = Value(createdAt);
+    this.createdAt = const Value.absent(),
+  }) : userId = Value(userId);
   static Insertable<NotificationLogData> custom({
     Expression<int>? id,
     Expression<int>? userId,
+    Expression<String>? sourceType,
+    Expression<int>? sourceId,
+    Expression<String>? title,
+    Expression<String>? body,
     Expression<int>? reminderId,
     Expression<DateTime>? scheduledFor,
     Expression<DateTime>? firedAt,
@@ -4922,6 +5086,10 @@ class NotificationLogCompanion extends UpdateCompanion<NotificationLogData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
+      if (sourceType != null) 'source_type': sourceType,
+      if (sourceId != null) 'source_id': sourceId,
+      if (title != null) 'title': title,
+      if (body != null) 'body': body,
       if (reminderId != null) 'reminder_id': reminderId,
       if (scheduledFor != null) 'scheduled_for': scheduledFor,
       if (firedAt != null) 'fired_at': firedAt,
@@ -4933,15 +5101,23 @@ class NotificationLogCompanion extends UpdateCompanion<NotificationLogData> {
   NotificationLogCompanion copyWith({
     Value<int>? id,
     Value<int>? userId,
-    Value<int>? reminderId,
-    Value<DateTime>? scheduledFor,
+    Value<String?>? sourceType,
+    Value<int?>? sourceId,
+    Value<String?>? title,
+    Value<String?>? body,
+    Value<int?>? reminderId,
+    Value<DateTime?>? scheduledFor,
     Value<DateTime?>? firedAt,
     Value<String>? status,
-    Value<DateTime>? createdAt,
+    Value<DateTime?>? createdAt,
   }) {
     return NotificationLogCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      sourceType: sourceType ?? this.sourceType,
+      sourceId: sourceId ?? this.sourceId,
+      title: title ?? this.title,
+      body: body ?? this.body,
       reminderId: reminderId ?? this.reminderId,
       scheduledFor: scheduledFor ?? this.scheduledFor,
       firedAt: firedAt ?? this.firedAt,
@@ -4958,6 +5134,18 @@ class NotificationLogCompanion extends UpdateCompanion<NotificationLogData> {
     }
     if (userId.present) {
       map['user_id'] = Variable<int>(userId.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (sourceId.present) {
+      map['source_id'] = Variable<int>(sourceId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
     }
     if (reminderId.present) {
       map['reminder_id'] = Variable<int>(reminderId.value);
@@ -4982,11 +5170,1746 @@ class NotificationLogCompanion extends UpdateCompanion<NotificationLogData> {
     return (StringBuffer('NotificationLogCompanion(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
           ..write('reminderId: $reminderId, ')
           ..write('scheduledFor: $scheduledFor, ')
           ..write('firedAt: $firedAt, ')
           ..write('status: $status, ')
           ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TodosEventsTable extends TodosEvents
+    with TableInfo<$TodosEventsTable, TodosEvent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodosEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<int> userId = GeneratedColumn<int>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notificationEnabledMeta =
+      const VerificationMeta('notificationEnabled');
+  @override
+  late final GeneratedColumn<int> notificationEnabled = GeneratedColumn<int>(
+    'notification_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _timeMeta = const VerificationMeta('time');
+  @override
+  late final GeneratedColumn<String> time = GeneratedColumn<String>(
+    'time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notificationIdMeta = const VerificationMeta(
+    'notificationId',
+  );
+  @override
+  late final GeneratedColumn<int> notificationId = GeneratedColumn<int>(
+    'notification_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
+    'isCompleted',
+  );
+  @override
+  late final GeneratedColumn<int> isCompleted = GeneratedColumn<int>(
+    'is_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    type,
+    title,
+    description,
+    createdAt,
+    notificationEnabled,
+    date,
+    time,
+    notificationId,
+    isCompleted,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'todos_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TodosEvent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('notification_enabled')) {
+      context.handle(
+        _notificationEnabledMeta,
+        notificationEnabled.isAcceptableOrUnknown(
+          data['notification_enabled']!,
+          _notificationEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    }
+    if (data.containsKey('time')) {
+      context.handle(
+        _timeMeta,
+        time.isAcceptableOrUnknown(data['time']!, _timeMeta),
+      );
+    }
+    if (data.containsKey('notification_id')) {
+      context.handle(
+        _notificationIdMeta,
+        notificationId.isAcceptableOrUnknown(
+          data['notification_id']!,
+          _notificationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_completed')) {
+      context.handle(
+        _isCompletedMeta,
+        isCompleted.isAcceptableOrUnknown(
+          data['is_completed']!,
+          _isCompletedMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodosEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodosEvent(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}user_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      notificationEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}notification_enabled'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      ),
+      time: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}time'],
+      ),
+      notificationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}notification_id'],
+      ),
+      isCompleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}is_completed'],
+      )!,
+    );
+  }
+
+  @override
+  $TodosEventsTable createAlias(String alias) {
+    return $TodosEventsTable(attachedDatabase, alias);
+  }
+}
+
+class TodosEvent extends DataClass implements Insertable<TodosEvent> {
+  final int id;
+  final int userId;
+  final String type;
+  final String title;
+  final String? description;
+  final String createdAt;
+  final int notificationEnabled;
+  final String? date;
+  final String? time;
+  final int? notificationId;
+  final int isCompleted;
+  const TodosEvent({
+    required this.id,
+    required this.userId,
+    required this.type,
+    required this.title,
+    this.description,
+    required this.createdAt,
+    required this.notificationEnabled,
+    this.date,
+    this.time,
+    this.notificationId,
+    required this.isCompleted,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['user_id'] = Variable<int>(userId);
+    map['type'] = Variable<String>(type);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    map['notification_enabled'] = Variable<int>(notificationEnabled);
+    if (!nullToAbsent || date != null) {
+      map['date'] = Variable<String>(date);
+    }
+    if (!nullToAbsent || time != null) {
+      map['time'] = Variable<String>(time);
+    }
+    if (!nullToAbsent || notificationId != null) {
+      map['notification_id'] = Variable<int>(notificationId);
+    }
+    map['is_completed'] = Variable<int>(isCompleted);
+    return map;
+  }
+
+  TodosEventsCompanion toCompanion(bool nullToAbsent) {
+    return TodosEventsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      type: Value(type),
+      title: Value(title),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      createdAt: Value(createdAt),
+      notificationEnabled: Value(notificationEnabled),
+      date: date == null && nullToAbsent ? const Value.absent() : Value(date),
+      time: time == null && nullToAbsent ? const Value.absent() : Value(time),
+      notificationId: notificationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notificationId),
+      isCompleted: Value(isCompleted),
+    );
+  }
+
+  factory TodosEvent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodosEvent(
+      id: serializer.fromJson<int>(json['id']),
+      userId: serializer.fromJson<int>(json['userId']),
+      type: serializer.fromJson<String>(json['type']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      notificationEnabled: serializer.fromJson<int>(
+        json['notificationEnabled'],
+      ),
+      date: serializer.fromJson<String?>(json['date']),
+      time: serializer.fromJson<String?>(json['time']),
+      notificationId: serializer.fromJson<int?>(json['notificationId']),
+      isCompleted: serializer.fromJson<int>(json['isCompleted']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'userId': serializer.toJson<int>(userId),
+      'type': serializer.toJson<String>(type),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String?>(description),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'notificationEnabled': serializer.toJson<int>(notificationEnabled),
+      'date': serializer.toJson<String?>(date),
+      'time': serializer.toJson<String?>(time),
+      'notificationId': serializer.toJson<int?>(notificationId),
+      'isCompleted': serializer.toJson<int>(isCompleted),
+    };
+  }
+
+  TodosEvent copyWith({
+    int? id,
+    int? userId,
+    String? type,
+    String? title,
+    Value<String?> description = const Value.absent(),
+    String? createdAt,
+    int? notificationEnabled,
+    Value<String?> date = const Value.absent(),
+    Value<String?> time = const Value.absent(),
+    Value<int?> notificationId = const Value.absent(),
+    int? isCompleted,
+  }) => TodosEvent(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    type: type ?? this.type,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    createdAt: createdAt ?? this.createdAt,
+    notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+    date: date.present ? date.value : this.date,
+    time: time.present ? time.value : this.time,
+    notificationId: notificationId.present
+        ? notificationId.value
+        : this.notificationId,
+    isCompleted: isCompleted ?? this.isCompleted,
+  );
+  TodosEvent copyWithCompanion(TodosEventsCompanion data) {
+    return TodosEvent(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      type: data.type.present ? data.type.value : this.type,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      notificationEnabled: data.notificationEnabled.present
+          ? data.notificationEnabled.value
+          : this.notificationEnabled,
+      date: data.date.present ? data.date.value : this.date,
+      time: data.time.present ? data.time.value : this.time,
+      notificationId: data.notificationId.present
+          ? data.notificationId.value
+          : this.notificationId,
+      isCompleted: data.isCompleted.present
+          ? data.isCompleted.value
+          : this.isCompleted,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodosEvent(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('notificationEnabled: $notificationEnabled, ')
+          ..write('date: $date, ')
+          ..write('time: $time, ')
+          ..write('notificationId: $notificationId, ')
+          ..write('isCompleted: $isCompleted')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    type,
+    title,
+    description,
+    createdAt,
+    notificationEnabled,
+    date,
+    time,
+    notificationId,
+    isCompleted,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodosEvent &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.type == this.type &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.createdAt == this.createdAt &&
+          other.notificationEnabled == this.notificationEnabled &&
+          other.date == this.date &&
+          other.time == this.time &&
+          other.notificationId == this.notificationId &&
+          other.isCompleted == this.isCompleted);
+}
+
+class TodosEventsCompanion extends UpdateCompanion<TodosEvent> {
+  final Value<int> id;
+  final Value<int> userId;
+  final Value<String> type;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<String> createdAt;
+  final Value<int> notificationEnabled;
+  final Value<String?> date;
+  final Value<String?> time;
+  final Value<int?> notificationId;
+  final Value<int> isCompleted;
+  const TodosEventsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.notificationEnabled = const Value.absent(),
+    this.date = const Value.absent(),
+    this.time = const Value.absent(),
+    this.notificationId = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+  });
+  TodosEventsCompanion.insert({
+    this.id = const Value.absent(),
+    required int userId,
+    required String type,
+    required String title,
+    this.description = const Value.absent(),
+    required String createdAt,
+    this.notificationEnabled = const Value.absent(),
+    this.date = const Value.absent(),
+    this.time = const Value.absent(),
+    this.notificationId = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+  }) : userId = Value(userId),
+       type = Value(type),
+       title = Value(title),
+       createdAt = Value(createdAt);
+  static Insertable<TodosEvent> custom({
+    Expression<int>? id,
+    Expression<int>? userId,
+    Expression<String>? type,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<String>? createdAt,
+    Expression<int>? notificationEnabled,
+    Expression<String>? date,
+    Expression<String>? time,
+    Expression<int>? notificationId,
+    Expression<int>? isCompleted,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (type != null) 'type': type,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (createdAt != null) 'created_at': createdAt,
+      if (notificationEnabled != null)
+        'notification_enabled': notificationEnabled,
+      if (date != null) 'date': date,
+      if (time != null) 'time': time,
+      if (notificationId != null) 'notification_id': notificationId,
+      if (isCompleted != null) 'is_completed': isCompleted,
+    });
+  }
+
+  TodosEventsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? userId,
+    Value<String>? type,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<String>? createdAt,
+    Value<int>? notificationEnabled,
+    Value<String?>? date,
+    Value<String?>? time,
+    Value<int?>? notificationId,
+    Value<int>? isCompleted,
+  }) {
+    return TodosEventsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      notificationId: notificationId ?? this.notificationId,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<int>(userId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (notificationEnabled.present) {
+      map['notification_enabled'] = Variable<int>(notificationEnabled.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (time.present) {
+      map['time'] = Variable<String>(time.value);
+    }
+    if (notificationId.present) {
+      map['notification_id'] = Variable<int>(notificationId.value);
+    }
+    if (isCompleted.present) {
+      map['is_completed'] = Variable<int>(isCompleted.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodosEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('notificationEnabled: $notificationEnabled, ')
+          ..write('date: $date, ')
+          ..write('time: $time, ')
+          ..write('notificationId: $notificationId, ')
+          ..write('isCompleted: $isCompleted')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HabitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<int> userId = GeneratedColumn<int>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _timeMeta = const VerificationMeta('time');
+  @override
+  late final GeneratedColumn<String> time = GeneratedColumn<String>(
+    'time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<int> isActive = GeneratedColumn<int>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    title,
+    description,
+    time,
+    createdAt,
+    isActive,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'habits';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Habit> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('time')) {
+      context.handle(
+        _timeMeta,
+        time.isAcceptableOrUnknown(data['time']!, _timeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_timeMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Habit map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Habit(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}user_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      time: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}time'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}is_active'],
+      )!,
+    );
+  }
+
+  @override
+  $HabitsTable createAlias(String alias) {
+    return $HabitsTable(attachedDatabase, alias);
+  }
+}
+
+class Habit extends DataClass implements Insertable<Habit> {
+  final int id;
+  final int userId;
+  final String title;
+  final String? description;
+  final String time;
+  final String createdAt;
+  final int isActive;
+  const Habit({
+    required this.id,
+    required this.userId,
+    required this.title,
+    this.description,
+    required this.time,
+    required this.createdAt,
+    required this.isActive,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['user_id'] = Variable<int>(userId);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['time'] = Variable<String>(time);
+    map['created_at'] = Variable<String>(createdAt);
+    map['is_active'] = Variable<int>(isActive);
+    return map;
+  }
+
+  HabitsCompanion toCompanion(bool nullToAbsent) {
+    return HabitsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      title: Value(title),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      time: Value(time),
+      createdAt: Value(createdAt),
+      isActive: Value(isActive),
+    );
+  }
+
+  factory Habit.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Habit(
+      id: serializer.fromJson<int>(json['id']),
+      userId: serializer.fromJson<int>(json['userId']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+      time: serializer.fromJson<String>(json['time']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      isActive: serializer.fromJson<int>(json['isActive']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'userId': serializer.toJson<int>(userId),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String?>(description),
+      'time': serializer.toJson<String>(time),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'isActive': serializer.toJson<int>(isActive),
+    };
+  }
+
+  Habit copyWith({
+    int? id,
+    int? userId,
+    String? title,
+    Value<String?> description = const Value.absent(),
+    String? time,
+    String? createdAt,
+    int? isActive,
+  }) => Habit(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    time: time ?? this.time,
+    createdAt: createdAt ?? this.createdAt,
+    isActive: isActive ?? this.isActive,
+  );
+  Habit copyWithCompanion(HabitsCompanion data) {
+    return Habit(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      time: data.time.present ? data.time.value : this.time,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Habit(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('time: $time, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, userId, title, description, time, createdAt, isActive);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Habit &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.time == this.time &&
+          other.createdAt == this.createdAt &&
+          other.isActive == this.isActive);
+}
+
+class HabitsCompanion extends UpdateCompanion<Habit> {
+  final Value<int> id;
+  final Value<int> userId;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<String> time;
+  final Value<String> createdAt;
+  final Value<int> isActive;
+  const HabitsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.time = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.isActive = const Value.absent(),
+  });
+  HabitsCompanion.insert({
+    this.id = const Value.absent(),
+    required int userId,
+    required String title,
+    this.description = const Value.absent(),
+    required String time,
+    required String createdAt,
+    this.isActive = const Value.absent(),
+  }) : userId = Value(userId),
+       title = Value(title),
+       time = Value(time),
+       createdAt = Value(createdAt);
+  static Insertable<Habit> custom({
+    Expression<int>? id,
+    Expression<int>? userId,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<String>? time,
+    Expression<String>? createdAt,
+    Expression<int>? isActive,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (time != null) 'time': time,
+      if (createdAt != null) 'created_at': createdAt,
+      if (isActive != null) 'is_active': isActive,
+    });
+  }
+
+  HabitsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? userId,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<String>? time,
+    Value<String>? createdAt,
+    Value<int>? isActive,
+  }) {
+    return HabitsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      time: time ?? this.time,
+      createdAt: createdAt ?? this.createdAt,
+      isActive: isActive ?? this.isActive,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<int>(userId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (time.present) {
+      map['time'] = Variable<String>(time.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<int>(isActive.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('time: $time, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HabitHistoryTable extends HabitHistory
+    with TableInfo<$HabitHistoryTable, HabitHistoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HabitHistoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _habitIdMeta = const VerificationMeta(
+    'habitId',
+  );
+  @override
+  late final GeneratedColumn<int> habitId = GeneratedColumn<int>(
+    'habit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES habits (id)',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<String> completedAt = GeneratedColumn<String>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    habitId,
+    date,
+    status,
+    completedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'habit_history';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HabitHistoryData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('habit_id')) {
+      context.handle(
+        _habitIdMeta,
+        habitId.isAcceptableOrUnknown(data['habit_id']!, _habitIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_habitIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {habitId, date},
+  ];
+  @override
+  HabitHistoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HabitHistoryData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      habitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}habit_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}completed_at'],
+      ),
+    );
+  }
+
+  @override
+  $HabitHistoryTable createAlias(String alias) {
+    return $HabitHistoryTable(attachedDatabase, alias);
+  }
+}
+
+class HabitHistoryData extends DataClass
+    implements Insertable<HabitHistoryData> {
+  final int id;
+  final int habitId;
+  final String date;
+  final String status;
+  final String? completedAt;
+  const HabitHistoryData({
+    required this.id,
+    required this.habitId,
+    required this.date,
+    required this.status,
+    this.completedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['habit_id'] = Variable<int>(habitId);
+    map['date'] = Variable<String>(date);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<String>(completedAt);
+    }
+    return map;
+  }
+
+  HabitHistoryCompanion toCompanion(bool nullToAbsent) {
+    return HabitHistoryCompanion(
+      id: Value(id),
+      habitId: Value(habitId),
+      date: Value(date),
+      status: Value(status),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+    );
+  }
+
+  factory HabitHistoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HabitHistoryData(
+      id: serializer.fromJson<int>(json['id']),
+      habitId: serializer.fromJson<int>(json['habitId']),
+      date: serializer.fromJson<String>(json['date']),
+      status: serializer.fromJson<String>(json['status']),
+      completedAt: serializer.fromJson<String?>(json['completedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'habitId': serializer.toJson<int>(habitId),
+      'date': serializer.toJson<String>(date),
+      'status': serializer.toJson<String>(status),
+      'completedAt': serializer.toJson<String?>(completedAt),
+    };
+  }
+
+  HabitHistoryData copyWith({
+    int? id,
+    int? habitId,
+    String? date,
+    String? status,
+    Value<String?> completedAt = const Value.absent(),
+  }) => HabitHistoryData(
+    id: id ?? this.id,
+    habitId: habitId ?? this.habitId,
+    date: date ?? this.date,
+    status: status ?? this.status,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+  );
+  HabitHistoryData copyWithCompanion(HabitHistoryCompanion data) {
+    return HabitHistoryData(
+      id: data.id.present ? data.id.value : this.id,
+      habitId: data.habitId.present ? data.habitId.value : this.habitId,
+      date: data.date.present ? data.date.value : this.date,
+      status: data.status.present ? data.status.value : this.status,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitHistoryData(')
+          ..write('id: $id, ')
+          ..write('habitId: $habitId, ')
+          ..write('date: $date, ')
+          ..write('status: $status, ')
+          ..write('completedAt: $completedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, habitId, date, status, completedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HabitHistoryData &&
+          other.id == this.id &&
+          other.habitId == this.habitId &&
+          other.date == this.date &&
+          other.status == this.status &&
+          other.completedAt == this.completedAt);
+}
+
+class HabitHistoryCompanion extends UpdateCompanion<HabitHistoryData> {
+  final Value<int> id;
+  final Value<int> habitId;
+  final Value<String> date;
+  final Value<String> status;
+  final Value<String?> completedAt;
+  const HabitHistoryCompanion({
+    this.id = const Value.absent(),
+    this.habitId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.status = const Value.absent(),
+    this.completedAt = const Value.absent(),
+  });
+  HabitHistoryCompanion.insert({
+    this.id = const Value.absent(),
+    required int habitId,
+    required String date,
+    required String status,
+    this.completedAt = const Value.absent(),
+  }) : habitId = Value(habitId),
+       date = Value(date),
+       status = Value(status);
+  static Insertable<HabitHistoryData> custom({
+    Expression<int>? id,
+    Expression<int>? habitId,
+    Expression<String>? date,
+    Expression<String>? status,
+    Expression<String>? completedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (habitId != null) 'habit_id': habitId,
+      if (date != null) 'date': date,
+      if (status != null) 'status': status,
+      if (completedAt != null) 'completed_at': completedAt,
+    });
+  }
+
+  HabitHistoryCompanion copyWith({
+    Value<int>? id,
+    Value<int>? habitId,
+    Value<String>? date,
+    Value<String>? status,
+    Value<String?>? completedAt,
+  }) {
+    return HabitHistoryCompanion(
+      id: id ?? this.id,
+      habitId: habitId ?? this.habitId,
+      date: date ?? this.date,
+      status: status ?? this.status,
+      completedAt: completedAt ?? this.completedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (habitId.present) {
+      map['habit_id'] = Variable<int>(habitId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<String>(completedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitHistoryCompanion(')
+          ..write('id: $id, ')
+          ..write('habitId: $habitId, ')
+          ..write('date: $date, ')
+          ..write('status: $status, ')
+          ..write('completedAt: $completedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $UserSettingsTable extends UserSettings
+    with TableInfo<$UserSettingsTable, UserSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<int> userId = GeneratedColumn<int>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [userId, key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UserSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {userId, key};
+  @override
+  UserSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserSetting(
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}user_id'],
+      )!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+    );
+  }
+
+  @override
+  $UserSettingsTable createAlias(String alias) {
+    return $UserSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class UserSetting extends DataClass implements Insertable<UserSetting> {
+  final int userId;
+  final String key;
+  final String value;
+  const UserSetting({
+    required this.userId,
+    required this.key,
+    required this.value,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['user_id'] = Variable<int>(userId);
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    return map;
+  }
+
+  UserSettingsCompanion toCompanion(bool nullToAbsent) {
+    return UserSettingsCompanion(
+      userId: Value(userId),
+      key: Value(key),
+      value: Value(value),
+    );
+  }
+
+  factory UserSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserSetting(
+      userId: serializer.fromJson<int>(json['userId']),
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'userId': serializer.toJson<int>(userId),
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+    };
+  }
+
+  UserSetting copyWith({int? userId, String? key, String? value}) =>
+      UserSetting(
+        userId: userId ?? this.userId,
+        key: key ?? this.key,
+        value: value ?? this.value,
+      );
+  UserSetting copyWithCompanion(UserSettingsCompanion data) {
+    return UserSetting(
+      userId: data.userId.present ? data.userId.value : this.userId,
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserSetting(')
+          ..write('userId: $userId, ')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(userId, key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserSetting &&
+          other.userId == this.userId &&
+          other.key == this.key &&
+          other.value == this.value);
+}
+
+class UserSettingsCompanion extends UpdateCompanion<UserSetting> {
+  final Value<int> userId;
+  final Value<String> key;
+  final Value<String> value;
+  final Value<int> rowid;
+  const UserSettingsCompanion({
+    this.userId = const Value.absent(),
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UserSettingsCompanion.insert({
+    required int userId,
+    required String key,
+    required String value,
+    this.rowid = const Value.absent(),
+  }) : userId = Value(userId),
+       key = Value(key),
+       value = Value(value);
+  static Insertable<UserSetting> custom({
+    Expression<int>? userId,
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (userId != null) 'user_id': userId,
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UserSettingsCompanion copyWith({
+    Value<int>? userId,
+    Value<String>? key,
+    Value<String>? value,
+    Value<int>? rowid,
+  }) {
+    return UserSettingsCompanion(
+      userId: userId ?? this.userId,
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (userId.present) {
+      map['user_id'] = Variable<int>(userId.value);
+    }
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserSettingsCompanion(')
+          ..write('userId: $userId, ')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -5005,6 +6928,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NotificationLogTable notificationLog = $NotificationLogTable(
     this,
   );
+  late final $TodosEventsTable todosEvents = $TodosEventsTable(this);
+  late final $HabitsTable habits = $HabitsTable(this);
+  late final $HabitHistoryTable habitHistory = $HabitHistoryTable(this);
+  late final $UserSettingsTable userSettings = $UserSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5018,6 +6945,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     features,
     reminders,
     notificationLog,
+    todosEvents,
+    habits,
+    habitHistory,
+    userSettings,
   ];
 }
 
@@ -5168,6 +7099,61 @@ final class $$UsersTableReferences
     final cache = $_typedResult.readTableOrNull(
       _notificationLogRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TodosEventsTable, List<TodosEvent>>
+  _todosEventsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.todosEvents,
+    aliasName: 'users__id__todos_events__user_id',
+  );
+
+  $$TodosEventsTableProcessedTableManager get todosEventsRefs {
+    final manager = $$TodosEventsTableTableManager(
+      $_db,
+      $_db.todosEvents,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_todosEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$HabitsTable, List<Habit>> _habitsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.habits,
+    aliasName: 'users__id__habits__user_id',
+  );
+
+  $$HabitsTableProcessedTableManager get habitsRefs {
+    final manager = $$HabitsTableTableManager(
+      $_db,
+      $_db.habits,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_habitsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$UserSettingsTable, List<UserSetting>>
+  _userSettingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.userSettings,
+    aliasName: 'users__id__user_settings__user_id',
+  );
+
+  $$UserSettingsTableProcessedTableManager get userSettingsRefs {
+    final manager = $$UserSettingsTableTableManager(
+      $_db,
+      $_db.userSettings,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_userSettingsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5378,6 +7364,81 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
           }) => $$NotificationLogTableFilterComposer(
             $db: $db,
             $table: $db.notificationLog,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> todosEventsRefs(
+    Expression<bool> Function($$TodosEventsTableFilterComposer f) f,
+  ) {
+    final $$TodosEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.todosEvents,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodosEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.todosEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> habitsRefs(
+    Expression<bool> Function($$HabitsTableFilterComposer f) f,
+  ) {
+    final $$HabitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableFilterComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> userSettingsRefs(
+    Expression<bool> Function($$UserSettingsTableFilterComposer f) f,
+  ) {
+    final $$UserSettingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.userSettings,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UserSettingsTableFilterComposer(
+            $db: $db,
+            $table: $db.userSettings,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5631,6 +7692,81 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> todosEventsRefs<T extends Object>(
+    Expression<T> Function($$TodosEventsTableAnnotationComposer a) f,
+  ) {
+    final $$TodosEventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.todosEvents,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodosEventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.todosEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> habitsRefs<T extends Object>(
+    Expression<T> Function($$HabitsTableAnnotationComposer a) f,
+  ) {
+    final $$HabitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> userSettingsRefs<T extends Object>(
+    Expression<T> Function($$UserSettingsTableAnnotationComposer a) f,
+  ) {
+    final $$UserSettingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.userSettings,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UserSettingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.userSettings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -5654,6 +7790,9 @@ class $$UsersTableTableManager
             bool featuresRefs,
             bool remindersRefs,
             bool notificationLogRefs,
+            bool todosEventsRefs,
+            bool habitsRefs,
+            bool userSettingsRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -5714,6 +7853,9 @@ class $$UsersTableTableManager
                 featuresRefs = false,
                 remindersRefs = false,
                 notificationLogRefs = false,
+                todosEventsRefs = false,
+                habitsRefs = false,
+                userSettingsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -5725,6 +7867,9 @@ class $$UsersTableTableManager
                     if (featuresRefs) db.features,
                     if (remindersRefs) db.reminders,
                     if (notificationLogRefs) db.notificationLog,
+                    if (todosEventsRefs) db.todosEvents,
+                    if (habitsRefs) db.habits,
+                    if (userSettingsRefs) db.userSettings,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -5856,6 +8001,61 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (todosEventsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          TodosEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._todosEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).todosEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (habitsRefs)
+                        await $_getPrefetchedData<User, $UsersTable, Habit>(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._habitsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(db, table, p0).habitsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (userSettingsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          UserSetting
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._userSettingsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).userSettingsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -5884,6 +8084,9 @@ typedef $$UsersTableProcessedTableManager =
         bool featuresRefs,
         bool remindersRefs,
         bool notificationLogRefs,
+        bool todosEventsRefs,
+        bool habitsRefs,
+        bool userSettingsRefs,
       })
     >;
 typedef $$AccountsTableCreateCompanionBuilder = AccountsCompanion Function({
@@ -8581,26 +10784,6 @@ final class $$RemindersTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
-
-  static MultiTypedResultKey<$NotificationLogTable, List<NotificationLogData>>
-  _notificationLogRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.notificationLog,
-    aliasName: 'reminders__id__notification_log__reminder_id',
-  );
-
-  $$NotificationLogTableProcessedTableManager get notificationLogRefs {
-    final manager = $$NotificationLogTableTableManager(
-      $_db,
-      $_db.notificationLog,
-    ).filter((f) => f.reminderId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _notificationLogRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
 }
 
 class $$RemindersTableFilterComposer
@@ -8728,31 +10911,6 @@ class $$RemindersTableFilterComposer
           ),
     );
     return composer;
-  }
-
-  Expression<bool> notificationLogRefs(
-    Expression<bool> Function($$NotificationLogTableFilterComposer f) f,
-  ) {
-    final $$NotificationLogTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.notificationLog,
-      getReferencedColumn: (t) => t.reminderId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$NotificationLogTableFilterComposer(
-            $db: $db,
-            $table: $db.notificationLog,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
   }
 }
 
@@ -8990,31 +11148,6 @@ class $$RemindersTableAnnotationComposer
     );
     return composer;
   }
-
-  Expression<T> notificationLogRefs<T extends Object>(
-    Expression<T> Function($$NotificationLogTableAnnotationComposer a) f,
-  ) {
-    final $$NotificationLogTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.notificationLog,
-      getReferencedColumn: (t) => t.reminderId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$NotificationLogTableAnnotationComposer(
-            $db: $db,
-            $table: $db.notificationLog,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$RemindersTableTableManager
@@ -9030,7 +11163,7 @@ class $$RemindersTableTableManager
           $$RemindersTableUpdateCompanionBuilder,
           (Reminder, $$RemindersTableReferences),
           Reminder,
-          PrefetchHooks Function({bool userId, bool notificationLogRefs})
+          PrefetchHooks Function({bool userId})
         > {
   $$RemindersTableTableManager(_$AppDatabase db, $RemindersTable table)
     : super(
@@ -9139,70 +11272,45 @@ class $$RemindersTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback:
-              ({userId = false, notificationLogRefs = false}) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (notificationLogRefs) db.notificationLog,
-                  ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (userId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.userId,
-                            referencedTable: $$RemindersTableReferences
-                                ._userIdTable(db),
-                            referencedColumn: $$RemindersTableReferences
-                                ._userIdTable(db)
-                                .id,
-                          ) as T;
-                        }
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$RemindersTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$RemindersTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
+                    }
 
-                        return state;
-                      },
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (notificationLogRefs)
-                        await $_getPrefetchedData<
-                          Reminder,
-                          $RemindersTable,
-                          NotificationLogData
-                        >(
-                          currentTable: table,
-                          referencedTable: $$RemindersTableReferences
-                              ._notificationLogRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$RemindersTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).notificationLogRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.reminderId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
+                    return state;
                   },
-                );
+              getPrefetchedDataCallback: (items) async {
+                return [];
               },
+            );
+          },
         ),
       );
 }
@@ -9219,27 +11327,35 @@ typedef $$RemindersTableProcessedTableManager =
       $$RemindersTableUpdateCompanionBuilder,
       (Reminder, $$RemindersTableReferences),
       Reminder,
-      PrefetchHooks Function({bool userId, bool notificationLogRefs})
+      PrefetchHooks Function({bool userId})
     >;
 typedef $$NotificationLogTableCreateCompanionBuilder =
     NotificationLogCompanion Function({
       Value<int> id,
       required int userId,
-      required int reminderId,
-      required DateTime scheduledFor,
+      Value<String?> sourceType,
+      Value<int?> sourceId,
+      Value<String?> title,
+      Value<String?> body,
+      Value<int?> reminderId,
+      Value<DateTime?> scheduledFor,
       Value<DateTime?> firedAt,
       Value<String> status,
-      required DateTime createdAt,
+      Value<DateTime?> createdAt,
     });
 typedef $$NotificationLogTableUpdateCompanionBuilder =
     NotificationLogCompanion Function({
       Value<int> id,
       Value<int> userId,
-      Value<int> reminderId,
-      Value<DateTime> scheduledFor,
+      Value<String?> sourceType,
+      Value<int?> sourceId,
+      Value<String?> title,
+      Value<String?> body,
+      Value<int?> reminderId,
+      Value<DateTime?> scheduledFor,
       Value<DateTime?> firedAt,
       Value<String> status,
-      Value<DateTime> createdAt,
+      Value<DateTime?> createdAt,
     });
 
 final class $$NotificationLogTableReferences
@@ -9271,23 +11387,6 @@ final class $$NotificationLogTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
-
-  static $RemindersTable _reminderIdTable(_$AppDatabase db) =>
-      db.reminders.createAlias('notification_log__reminder_id__reminders__id');
-
-  $$RemindersTableProcessedTableManager get reminderId {
-    final $_column = $_itemColumn<int>('reminder_id')!;
-
-    final manager = $$RemindersTableTableManager(
-      $_db,
-      $_db.reminders,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_reminderIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
 }
 
 class $$NotificationLogTableFilterComposer
@@ -9301,6 +11400,31 @@ class $$NotificationLogTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get reminderId => $composableBuilder(
+    column: $table.reminderId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9346,29 +11470,6 @@ class $$NotificationLogTableFilterComposer
     );
     return composer;
   }
-
-  $$RemindersTableFilterComposer get reminderId {
-    final $$RemindersTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.reminderId,
-      referencedTable: $db.reminders,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RemindersTableFilterComposer(
-            $db: $db,
-            $table: $db.reminders,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$NotificationLogTableOrderingComposer
@@ -9382,6 +11483,31 @@ class $$NotificationLogTableOrderingComposer
   });
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get reminderId => $composableBuilder(
+    column: $table.reminderId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -9427,29 +11553,6 @@ class $$NotificationLogTableOrderingComposer
     );
     return composer;
   }
-
-  $$RemindersTableOrderingComposer get reminderId {
-    final $$RemindersTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.reminderId,
-      referencedTable: $db.reminders,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RemindersTableOrderingComposer(
-            $db: $db,
-            $table: $db.reminders,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$NotificationLogTableAnnotationComposer
@@ -9463,6 +11566,25 @@ class $$NotificationLogTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sourceId =>
+      $composableBuilder(column: $table.sourceId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<int> get reminderId => $composableBuilder(
+    column: $table.reminderId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get scheduledFor => $composableBuilder(
     column: $table.scheduledFor,
@@ -9500,29 +11622,6 @@ class $$NotificationLogTableAnnotationComposer
     );
     return composer;
   }
-
-  $$RemindersTableAnnotationComposer get reminderId {
-    final $$RemindersTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.reminderId,
-      referencedTable: $db.reminders,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RemindersTableAnnotationComposer(
-            $db: $db,
-            $table: $db.reminders,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$NotificationLogTableTableManager
@@ -9538,7 +11637,7 @@ class $$NotificationLogTableTableManager
           $$NotificationLogTableUpdateCompanionBuilder,
           (NotificationLogData, $$NotificationLogTableReferences),
           NotificationLogData,
-          PrefetchHooks Function({bool userId, bool reminderId})
+          PrefetchHooks Function({bool userId})
         > {
   $$NotificationLogTableTableManager(
     _$AppDatabase db,
@@ -9557,14 +11656,22 @@ class $$NotificationLogTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> userId = const Value.absent(),
-                Value<int> reminderId = const Value.absent(),
-                Value<DateTime> scheduledFor = const Value.absent(),
+                Value<String?> sourceType = const Value.absent(),
+                Value<int?> sourceId = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                Value<String?> body = const Value.absent(),
+                Value<int?> reminderId = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
                 Value<DateTime?> firedAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
               }) => NotificationLogCompanion(
                 id: id,
                 userId: userId,
+                sourceType: sourceType,
+                sourceId: sourceId,
+                title: title,
+                body: body,
                 reminderId: reminderId,
                 scheduledFor: scheduledFor,
                 firedAt: firedAt,
@@ -9575,14 +11682,22 @@ class $$NotificationLogTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required int userId,
-                required int reminderId,
-                required DateTime scheduledFor,
+                Value<String?> sourceType = const Value.absent(),
+                Value<int?> sourceId = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                Value<String?> body = const Value.absent(),
+                Value<int?> reminderId = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
                 Value<DateTime?> firedAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
-                required DateTime createdAt,
+                Value<DateTime?> createdAt = const Value.absent(),
               }) => NotificationLogCompanion.insert(
                 id: id,
                 userId: userId,
+                sourceType: sourceType,
+                sourceId: sourceId,
+                title: title,
+                body: body,
                 reminderId: reminderId,
                 scheduledFor: scheduledFor,
                 firedAt: firedAt,
@@ -9597,7 +11712,7 @@ class $$NotificationLogTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({userId = false, reminderId = false}) {
+          prefetchHooksCallback: ({userId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -9628,17 +11743,6 @@ class $$NotificationLogTableTableManager
                             .id,
                       ) as T;
                     }
-                    if (reminderId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.reminderId,
-                        referencedTable: $$NotificationLogTableReferences
-                            ._reminderIdTable(db),
-                        referencedColumn: $$NotificationLogTableReferences
-                            ._reminderIdTable(db)
-                            .id,
-                      ) as T;
-                    }
 
                     return state;
                   },
@@ -9663,7 +11767,1460 @@ typedef $$NotificationLogTableProcessedTableManager =
       $$NotificationLogTableUpdateCompanionBuilder,
       (NotificationLogData, $$NotificationLogTableReferences),
       NotificationLogData,
-      PrefetchHooks Function({bool userId, bool reminderId})
+      PrefetchHooks Function({bool userId})
+    >;
+typedef $$TodosEventsTableCreateCompanionBuilder =
+    TodosEventsCompanion Function({
+      Value<int> id,
+      required int userId,
+      required String type,
+      required String title,
+      Value<String?> description,
+      required String createdAt,
+      Value<int> notificationEnabled,
+      Value<String?> date,
+      Value<String?> time,
+      Value<int?> notificationId,
+      Value<int> isCompleted,
+    });
+typedef $$TodosEventsTableUpdateCompanionBuilder =
+    TodosEventsCompanion Function({
+      Value<int> id,
+      Value<int> userId,
+      Value<String> type,
+      Value<String> title,
+      Value<String?> description,
+      Value<String> createdAt,
+      Value<int> notificationEnabled,
+      Value<String?> date,
+      Value<String?> time,
+      Value<int?> notificationId,
+      Value<int> isCompleted,
+    });
+
+final class $$TodosEventsTableReferences
+    extends BaseReferences<_$AppDatabase, $TodosEventsTable, TodosEvent> {
+  $$TodosEventsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('todos_events__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<int>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TodosEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $TodosEventsTable> {
+  $$TodosEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get notificationEnabled => $composableBuilder(
+    column: $table.notificationEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get time => $composableBuilder(
+    column: $table.time,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodosEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodosEventsTable> {
+  $$TodosEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get notificationEnabled => $composableBuilder(
+    column: $table.notificationEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get time => $composableBuilder(
+    column: $table.time,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodosEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodosEventsTable> {
+  $$TodosEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get notificationEnabled => $composableBuilder(
+    column: $table.notificationEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => column);
+
+  GeneratedColumn<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodosEventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TodosEventsTable,
+          TodosEvent,
+          $$TodosEventsTableFilterComposer,
+          $$TodosEventsTableOrderingComposer,
+          $$TodosEventsTableAnnotationComposer,
+          $$TodosEventsTableCreateCompanionBuilder,
+          $$TodosEventsTableUpdateCompanionBuilder,
+          (TodosEvent, $$TodosEventsTableReferences),
+          TodosEvent,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$TodosEventsTableTableManager(_$AppDatabase db, $TodosEventsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodosEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodosEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodosEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> userId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<int> notificationEnabled = const Value.absent(),
+                Value<String?> date = const Value.absent(),
+                Value<String?> time = const Value.absent(),
+                Value<int?> notificationId = const Value.absent(),
+                Value<int> isCompleted = const Value.absent(),
+              }) => TodosEventsCompanion(
+                id: id,
+                userId: userId,
+                type: type,
+                title: title,
+                description: description,
+                createdAt: createdAt,
+                notificationEnabled: notificationEnabled,
+                date: date,
+                time: time,
+                notificationId: notificationId,
+                isCompleted: isCompleted,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int userId,
+                required String type,
+                required String title,
+                Value<String?> description = const Value.absent(),
+                required String createdAt,
+                Value<int> notificationEnabled = const Value.absent(),
+                Value<String?> date = const Value.absent(),
+                Value<String?> time = const Value.absent(),
+                Value<int?> notificationId = const Value.absent(),
+                Value<int> isCompleted = const Value.absent(),
+              }) => TodosEventsCompanion.insert(
+                id: id,
+                userId: userId,
+                type: type,
+                title: title,
+                description: description,
+                createdAt: createdAt,
+                notificationEnabled: notificationEnabled,
+                date: date,
+                time: time,
+                notificationId: notificationId,
+                isCompleted: isCompleted,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TodosEventsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$TodosEventsTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$TodosEventsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TodosEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TodosEventsTable,
+      TodosEvent,
+      $$TodosEventsTableFilterComposer,
+      $$TodosEventsTableOrderingComposer,
+      $$TodosEventsTableAnnotationComposer,
+      $$TodosEventsTableCreateCompanionBuilder,
+      $$TodosEventsTableUpdateCompanionBuilder,
+      (TodosEvent, $$TodosEventsTableReferences),
+      TodosEvent,
+      PrefetchHooks Function({bool userId})
+    >;
+typedef $$HabitsTableCreateCompanionBuilder = HabitsCompanion Function({
+  Value<int> id,
+  required int userId,
+  required String title,
+  Value<String?> description,
+  required String time,
+  required String createdAt,
+  Value<int> isActive,
+});
+typedef $$HabitsTableUpdateCompanionBuilder = HabitsCompanion Function({
+  Value<int> id,
+  Value<int> userId,
+  Value<String> title,
+  Value<String?> description,
+  Value<String> time,
+  Value<String> createdAt,
+  Value<int> isActive,
+});
+
+final class $$HabitsTableReferences
+    extends BaseReferences<_$AppDatabase, $HabitsTable, Habit> {
+  $$HabitsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('habits__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<int>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$HabitHistoryTable, List<HabitHistoryData>>
+  _habitHistoryRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.habitHistory,
+    aliasName: 'habits__id__habit_history__habit_id',
+  );
+
+  $$HabitHistoryTableProcessedTableManager get habitHistoryRefs {
+    final manager = $$HabitHistoryTableTableManager(
+      $_db,
+      $_db.habitHistory,
+    ).filter((f) => f.habitId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_habitHistoryRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$HabitsTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitsTable> {
+  $$HabitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get time => $composableBuilder(
+    column: $table.time,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> habitHistoryRefs(
+    Expression<bool> Function($$HabitHistoryTableFilterComposer f) f,
+  ) {
+    final $$HabitHistoryTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitHistory,
+      getReferencedColumn: (t) => t.habitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitHistoryTableFilterComposer(
+            $db: $db,
+            $table: $db.habitHistory,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$HabitsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitsTable> {
+  $$HabitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get time => $composableBuilder(
+    column: $table.time,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitsTable> {
+  $$HabitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> habitHistoryRefs<T extends Object>(
+    Expression<T> Function($$HabitHistoryTableAnnotationComposer a) f,
+  ) {
+    final $$HabitHistoryTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitHistory,
+      getReferencedColumn: (t) => t.habitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitHistoryTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habitHistory,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$HabitsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HabitsTable,
+          Habit,
+          $$HabitsTableFilterComposer,
+          $$HabitsTableOrderingComposer,
+          $$HabitsTableAnnotationComposer,
+          $$HabitsTableCreateCompanionBuilder,
+          $$HabitsTableUpdateCompanionBuilder,
+          (Habit, $$HabitsTableReferences),
+          Habit,
+          PrefetchHooks Function({bool userId, bool habitHistoryRefs})
+        > {
+  $$HabitsTableTableManager(_$AppDatabase db, $HabitsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HabitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HabitsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HabitsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> userId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<String> time = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<int> isActive = const Value.absent(),
+              }) => HabitsCompanion(
+                id: id,
+                userId: userId,
+                title: title,
+                description: description,
+                time: time,
+                createdAt: createdAt,
+                isActive: isActive,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int userId,
+                required String title,
+                Value<String?> description = const Value.absent(),
+                required String time,
+                required String createdAt,
+                Value<int> isActive = const Value.absent(),
+              }) => HabitsCompanion.insert(
+                id: id,
+                userId: userId,
+                title: title,
+                description: description,
+                time: time,
+                createdAt: createdAt,
+                isActive: isActive,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$HabitsTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false, habitHistoryRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (habitHistoryRefs) db.habitHistory],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$HabitsTableReferences._userIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$HabitsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (habitHistoryRefs)
+                    await $_getPrefetchedData<
+                      Habit,
+                      $HabitsTable,
+                      HabitHistoryData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$HabitsTableReferences
+                          ._habitHistoryRefsTable(db),
+                      managerFromTypedResult: (p0) => $$HabitsTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).habitHistoryRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.habitId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HabitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HabitsTable,
+      Habit,
+      $$HabitsTableFilterComposer,
+      $$HabitsTableOrderingComposer,
+      $$HabitsTableAnnotationComposer,
+      $$HabitsTableCreateCompanionBuilder,
+      $$HabitsTableUpdateCompanionBuilder,
+      (Habit, $$HabitsTableReferences),
+      Habit,
+      PrefetchHooks Function({bool userId, bool habitHistoryRefs})
+    >;
+typedef $$HabitHistoryTableCreateCompanionBuilder =
+    HabitHistoryCompanion Function({
+      Value<int> id,
+      required int habitId,
+      required String date,
+      required String status,
+      Value<String?> completedAt,
+    });
+typedef $$HabitHistoryTableUpdateCompanionBuilder =
+    HabitHistoryCompanion Function({
+      Value<int> id,
+      Value<int> habitId,
+      Value<String> date,
+      Value<String> status,
+      Value<String?> completedAt,
+    });
+
+final class $$HabitHistoryTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $HabitHistoryTable, HabitHistoryData> {
+  $$HabitHistoryTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $HabitsTable _habitIdTable(_$AppDatabase db) =>
+      db.habits.createAlias('habit_history__habit_id__habits__id');
+
+  $$HabitsTableProcessedTableManager get habitId {
+    final $_column = $_itemColumn<int>('habit_id')!;
+
+    final manager = $$HabitsTableTableManager(
+      $_db,
+      $_db.habits,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_habitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$HabitHistoryTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitHistoryTable> {
+  $$HabitHistoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$HabitsTableFilterComposer get habitId {
+    final $$HabitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableFilterComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitHistoryTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitHistoryTable> {
+  $$HabitHistoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$HabitsTableOrderingComposer get habitId {
+    final $$HabitsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableOrderingComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitHistoryTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitHistoryTable> {
+  $$HabitHistoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  $$HabitsTableAnnotationComposer get habitId {
+    final $$HabitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitHistoryTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HabitHistoryTable,
+          HabitHistoryData,
+          $$HabitHistoryTableFilterComposer,
+          $$HabitHistoryTableOrderingComposer,
+          $$HabitHistoryTableAnnotationComposer,
+          $$HabitHistoryTableCreateCompanionBuilder,
+          $$HabitHistoryTableUpdateCompanionBuilder,
+          (HabitHistoryData, $$HabitHistoryTableReferences),
+          HabitHistoryData,
+          PrefetchHooks Function({bool habitId})
+        > {
+  $$HabitHistoryTableTableManager(_$AppDatabase db, $HabitHistoryTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HabitHistoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HabitHistoryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HabitHistoryTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> habitId = const Value.absent(),
+                Value<String> date = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+              }) => HabitHistoryCompanion(
+                id: id,
+                habitId: habitId,
+                date: date,
+                status: status,
+                completedAt: completedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int habitId,
+                required String date,
+                required String status,
+                Value<String?> completedAt = const Value.absent(),
+              }) => HabitHistoryCompanion.insert(
+                id: id,
+                habitId: habitId,
+                date: date,
+                status: status,
+                completedAt: completedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HabitHistoryTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({habitId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (habitId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.habitId,
+                        referencedTable: $$HabitHistoryTableReferences
+                            ._habitIdTable(db),
+                        referencedColumn: $$HabitHistoryTableReferences
+                            ._habitIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HabitHistoryTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HabitHistoryTable,
+      HabitHistoryData,
+      $$HabitHistoryTableFilterComposer,
+      $$HabitHistoryTableOrderingComposer,
+      $$HabitHistoryTableAnnotationComposer,
+      $$HabitHistoryTableCreateCompanionBuilder,
+      $$HabitHistoryTableUpdateCompanionBuilder,
+      (HabitHistoryData, $$HabitHistoryTableReferences),
+      HabitHistoryData,
+      PrefetchHooks Function({bool habitId})
+    >;
+typedef $$UserSettingsTableCreateCompanionBuilder =
+    UserSettingsCompanion Function({
+      required int userId,
+      required String key,
+      required String value,
+      Value<int> rowid,
+    });
+typedef $$UserSettingsTableUpdateCompanionBuilder =
+    UserSettingsCompanion Function({
+      Value<int> userId,
+      Value<String> key,
+      Value<String> value,
+      Value<int> rowid,
+    });
+
+final class $$UserSettingsTableReferences
+    extends BaseReferences<_$AppDatabase, $UserSettingsTable, UserSetting> {
+  $$UserSettingsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('user_settings__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<int>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$UserSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$UserSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$UserSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$UserSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UserSettingsTable,
+          UserSetting,
+          $$UserSettingsTableFilterComposer,
+          $$UserSettingsTableOrderingComposer,
+          $$UserSettingsTableAnnotationComposer,
+          $$UserSettingsTableCreateCompanionBuilder,
+          $$UserSettingsTableUpdateCompanionBuilder,
+          (UserSetting, $$UserSettingsTableReferences),
+          UserSetting,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$UserSettingsTableTableManager(_$AppDatabase db, $UserSettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UserSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> userId = const Value.absent(),
+                Value<String> key = const Value.absent(),
+                Value<String> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UserSettingsCompanion(
+                userId: userId,
+                key: key,
+                value: value,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int userId,
+                required String key,
+                required String value,
+                Value<int> rowid = const Value.absent(),
+              }) => UserSettingsCompanion.insert(
+                userId: userId,
+                key: key,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$UserSettingsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$UserSettingsTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$UserSettingsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$UserSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UserSettingsTable,
+      UserSetting,
+      $$UserSettingsTableFilterComposer,
+      $$UserSettingsTableOrderingComposer,
+      $$UserSettingsTableAnnotationComposer,
+      $$UserSettingsTableCreateCompanionBuilder,
+      $$UserSettingsTableUpdateCompanionBuilder,
+      (UserSetting, $$UserSettingsTableReferences),
+      UserSetting,
+      PrefetchHooks Function({bool userId})
     >;
 
 class $AppDatabaseManager {
@@ -9685,4 +13242,12 @@ class $AppDatabaseManager {
       $$RemindersTableTableManager(_db, _db.reminders);
   $$NotificationLogTableTableManager get notificationLog =>
       $$NotificationLogTableTableManager(_db, _db.notificationLog);
+  $$TodosEventsTableTableManager get todosEvents =>
+      $$TodosEventsTableTableManager(_db, _db.todosEvents);
+  $$HabitsTableTableManager get habits =>
+      $$HabitsTableTableManager(_db, _db.habits);
+  $$HabitHistoryTableTableManager get habitHistory =>
+      $$HabitHistoryTableTableManager(_db, _db.habitHistory);
+  $$UserSettingsTableTableManager get userSettings =>
+      $$UserSettingsTableTableManager(_db, _db.userSettings);
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lifeos/screens/widgets/modern_bottom_nav.dart';
 import 'package:provider/provider.dart';
-
+import 'package:lifeos/screens/todo/todo_screen.dart';
+import 'package:lifeos/screens/event/event_screen.dart';
+import 'package:lifeos/screens/habit/habit_screen.dart';
 import 'package:lifeos/providers/auth_provider.dart';
 import 'package:lifeos/screens/auth/login_screen.dart';
 import 'package:lifeos/screens/dashboard/dashboard_screen.dart';
@@ -11,6 +13,7 @@ import 'package:lifeos/screens/cashbook/cashbook_screen.dart';
 import 'package:lifeos/screens/transfers/transfer_list_screen.dart';
 import 'package:lifeos/screens/account/account_screen.dart';
 import 'package:lifeos/screens/settings/settings_screen.dart';
+import 'package:lifeos/screens/notifications/notifications_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,13 +23,11 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-
   int _bottomIndex = 0;
 
   // -1 = using bottom navigation
   // >= 0 = a drawer-only screen is open
   int _drawerIndex = -1;
-
 
   final List<Widget> _bottomScreens = const [
     DashboardScreen(),
@@ -70,6 +71,25 @@ class _MainScreenState extends State<MainScreen> {
       icon: Icons.swap_horiz_rounded,
       screen: TransferListScreen(),
     ),
+
+    // ========== NEW MODULE ==========
+    _DrawerItem(
+      title: 'Todos',
+      icon: Icons.check_box_rounded,
+      screen: TodoScreen(),
+    ),
+    _DrawerItem(
+      title: 'Events',
+      icon: Icons.event_rounded,
+      screen: EventScreen(),
+    ),
+    _DrawerItem(
+      title: 'Habits',
+      icon: Icons.repeat_rounded,
+      screen: HabitScreen(),
+    ),
+    // ========== END NEW MODULE ==========
+
     _DrawerItem(
       title: 'Settings',
       icon: Icons.settings_rounded,
@@ -154,19 +174,31 @@ class _MainScreenState extends State<MainScreen> {
     Navigator.pop(context);
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_currentTitle),
+        // Left side stays as the default hamburger (drawer)
+        // Right side = notification icon
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.notifications_outlined),
+          ),
+        ],
       ),
-
       drawer: Drawer(
         child: SafeArea(
           child: Column(
             children: [
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -205,7 +237,6 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 ),
               ),
-
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.symmetric(
@@ -220,17 +251,13 @@ class _MainScreenState extends State<MainScreen> {
                         title: Text(
                           _drawerItems[i].title,
                         ),
-
                         // Highlight the currently selected item.
                         selected: _drawerIndex == i ||
                             (_drawerIndex == -1 &&
-                                _drawerItems[i].bottomIndex ==
-                                    _bottomIndex),
-
+                                _drawerItems[i].bottomIndex == _bottomIndex),
                         selectedTileColor: Theme.of(context)
                             .primaryColor
                             .withOpacity(0.08),
-
                         onTap: () {
                           _onDrawerItemTap(i);
                         },
@@ -238,9 +265,7 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 ),
               ),
-
               const Divider(height: 1),
-
               ListTile(
                 leading: const Icon(
                   Icons.logout,
@@ -257,20 +282,17 @@ class _MainScreenState extends State<MainScreen> {
                   _confirmLogout();
                 },
               ),
-
               const SizedBox(height: 8),
             ],
           ),
         ),
       ),
-
       body: _drawerIndex >= 0
           ? _drawerItems[_drawerIndex].screen
           : IndexedStack(
               index: _bottomIndex,
               children: _bottomScreens,
             ),
-
       bottomNavigationBar: _drawerIndex >= 0
           ? null
           : ModernBottomNav(
@@ -285,6 +307,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
+
 class _DrawerItem {
   final String title;
   final IconData icon;

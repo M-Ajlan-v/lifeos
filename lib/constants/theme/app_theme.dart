@@ -1,25 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// ===============================================================
-/// LIFEOS DESIGN SYSTEM
-/// ===============================================================
-///
-/// This file contains the complete visual system for LifeOS:
-///
-/// 1. App Colors
-/// 2. Semantic / Financial Colors
-/// 3. Gradients
-/// 4. Typography
-/// 5. Border Radius
-/// 6. Spacing
-/// 7. Shadows / Glows
-/// 8. ThemeData
-///
-/// IMPORTANT:
-/// Screens should use these values instead of hardcoding colors,
-/// font sizes, gradients, radii, etc.
-/// ===============================================================
-
 class AppTheme {
   AppTheme._();
 
@@ -27,113 +7,187 @@ class AppTheme {
   // COLORS
   // ===============================================================
 
-  /// Main application background.
-  static const Color background = Color(0xFF08090B);
+  static const Color background = Color(0xFF0B0B12);
+  static const Color backgroundSecondary = Color(0xFF12121A);
+  static const Color card = Color(0xFF17171F);
+  static const Color cardElevated = Color(0xFF1E1E27);
+  static const Color surface = Color(0xFF22222C);
+  static const Color surfaceDeep = Color(0xFF0F0F16);
 
-  /// Secondary dark background used for sections/navigation.
-  static const Color backgroundSecondary = Color(0xFF101114);
+  // Violet
+  static const Color violetDeep = Color(0xFF32145F);
+  static const Color violetDark = Color(0xFF4A1F8C);
+  static const Color violet = Color(0xFF7C3FF2);
+  static const Color violetBright = Color(0xFFA86BFF);
+  static const Color lavender = Color(0xFFC08BFF);
+  static const Color violetSoft = Color(0x337C3FF2);
 
-  /// Standard card background.
-  static const Color card = Color(0xFF17181C);
+  // Orange
+  static const Color orangeDeep = Color(0xFFE84B08);
+  static const Color orange = Color(0xFFFF6A00);
+  static const Color orangeBright = Color(0xFFFF8528);
+  static const Color amber = Color(0xFFFF9A3D);
+  static const Color amberLight = Color(0xFFFFBC69);
+  static const Color orangeSoft = Color(0x33FF6A00);
 
-  /// Elevated card background.
-  static const Color cardElevated = Color(0xFF1D1F24);
-
-  // ---------------------------------------------------------------
-  // GOLD
-  // ---------------------------------------------------------------
-
-  /// Main premium LifeOS gold.
+  // Gold
   static const Color gold = Color(0xFFD6A84F);
-
-  /// Bright/champagne gold.
   static const Color goldLight = Color(0xFFF0D18A);
-
-  /// Dark gold.
   static const Color goldDark = Color(0xFF9D7430);
-
-  /// Deep gold used as a gradient starting point.
   static const Color goldDeep = Color(0xFF8A5A20);
 
-  // ---------------------------------------------------------------
-  // TEXT
-  // ---------------------------------------------------------------
+  // Text
+  static const Color textPrimary = Color(0xFFF7F5F2);
+  static const Color textSecondary = Color(0xFFAAA8B0);
+  static const Color textMuted = Color(0xFF74737C);
+  static const Color textOnAccent = Color(0xFF120D16);
 
-  /// Main text color.
-  static const Color textPrimary = Color(0xFFF5F5F2);
+  // Borders
+  static const Color divider = Color(0xFF292931);
+  static const Color cardBorder = Color(0xFF34343E);
+  static const Color glassBorder = Color(0x18FFFFFF);
+  static const Color glassBorderStrong = Color(0x2DFFFFFF);
+  static const Color glassSurface = Color(0x0FFFFFFF);
 
-  /// Secondary text.
-  static const Color textSecondary = Color(0xFFA8A8A3);
-
-  /// Low-emphasis / muted text.
-  static const Color textMuted = Color(0xFF6F706D);
-
-  // ---------------------------------------------------------------
-  // BORDERS / DIVIDERS
-  // ---------------------------------------------------------------
-
-  /// Standard divider color.
-  static const Color divider = Color(0xFF292A2E);
-
-  /// Card border.
-  static const Color cardBorder = Color(0xFF34353A);
-
-  /// Very subtle white border for glass-like components.
-  static const Color glassBorder = Color(0x14FFFFFF);
-
-  // ---------------------------------------------------------------
-  // FINANCIAL / SEMANTIC COLORS
-  // ---------------------------------------------------------------
-
-  /// Income / money received / positive financial value.
-  static const Color income = Color(0xFF4DB58A);
-
-  /// Dark income color used in income gradients.
+  // Financial
+  static const Color income = Color(0xFF55C99A);
   static const Color incomeDark = Color(0xFF185A45);
-
-  /// Expense / money spent / negative financial value.
-  static const Color expense = Color(0xFFE56B6F);
-
-  /// Dark expense color used in expense gradients.
+  static const Color expense = Color(0xFFE96B72);
   static const Color expenseDark = Color(0xFF67252A);
-
-  /// Warning state.
-  static const Color warning = Color(0xFFD9A441);
-
-  /// Transfer color.
+  static const Color warning = amber;
   static const Color transfer = Color(0xFFD6A84F);
+  static const Color info = Color(0xFF5575B5);
 
-  /// Information / analytics color.
-  static const Color info = Color(0xFF263A58);
-
-  // ---------------------------------------------------------------
-  // ADDITIONAL GRADIENT COLORS
-  // ---------------------------------------------------------------
-
-  /// Bright ruby used at the end of the expense gradient.
+  // Other
   static const Color rubyBright = Color(0xFFC6535A);
-
-  /// Dark emerald used at the beginning of the income gradient.
   static const Color emeraldDark = Color(0xFF10251F);
-
-  /// Dark midnight blue used for analytics.
-  static const Color midnightDark = Color(0xFF0D111A);
-
-  /// Middle midnight blue.
-  static const Color midnight = Color(0xFF172338);
-
-  /// Dark purple used for special/advanced features.
+  static const Color midnightDark = Color(0xFF080910);
+  static const Color midnight = Color(0xFF171B2A);
   static const Color purpleDark = Color(0xFF111018);
-
-  /// Middle purple.
   static const Color purple = Color(0xFF252033);
-
-  /// Bright purple.
   static const Color purpleBright = Color(0xFF453665);
 
   // ===============================================================
   // GRADIENTS
   // ===============================================================
+
+  static const LinearGradient violetGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      violetDeep,
+      Color(0xFF6B32D8),
+      violetBright,
+    ],
+  );
+
+  static const LinearGradient violetBrightGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF5B24C7),
+      violet,
+      lavender,
+    ],
+  );
+
+  static const LinearGradient purpleCardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF25104A),
+      Color(0xFF5420A0),
+      Color(0xFF8B4DFF),
+    ],
+  );
+
+  static const LinearGradient violetGlowGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF8B4DFF),
+      Color(0xFF5D2BC2),
+      Color(0xFF17121F),
+    ],
+  );
+
+  static const LinearGradient orangeGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      orangeDeep,
+      orange,
+      amber,
+    ],
+  );
+
+  static const LinearGradient orangeBrightGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFFFF5A00),
+      Color(0xFFFF7818),
+      Color(0xFFFFB24D),
+    ],
+  );
+
+  static const LinearGradient orangeGlowGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      orange,
+      orangeDeep,
+      Color(0xFF35170C),
+    ],
+  );
+
+  static const LinearGradient violetOrangeGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF6328C8),
+      Color(0xFF8B4DFF),
+      Color(0xFFFF7A18),
+    ],
+  );
+
+  static const LinearGradient glassGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0x1AFFFFFF),
+      Color(0x08FFFFFF),
+    ],
+  );
+
+  static const LinearGradient surfaceGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF20202A),
+      Color(0xFF111117),
+    ],
+  );
+
+  static const LinearGradient purpleBlackGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF17121F),
+      Color(0xFF25183A),
+      Color(0xFF3B2166),
+    ],
+  );
+
+  static const LinearGradient midnightBlueGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      midnightDark,
+      midnight,
+      Color(0xFF263A58),
+    ],
+  );
 
   static const LinearGradient signatureGoldGradient = LinearGradient(
     begin: Alignment.topLeft,
@@ -205,26 +259,6 @@ class AppTheme {
     ],
   );
 
-  static const LinearGradient midnightBlueGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      midnightDark,
-      midnight,
-      Color(0xFF263A58),
-    ],
-  );
-
-  static const LinearGradient purpleBlackGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      purpleDark,
-      purple,
-      purpleBright,
-    ],
-  );
-
   static const LinearGradient obsidianGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -234,7 +268,24 @@ class AppTheme {
     ],
   );
 
-  /// Primary button gradient.
+  static const LinearGradient buttonGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      Color(0xFF6B32D8),
+      Color(0xFF8B4DFF),
+    ],
+  );
+
+  static const LinearGradient buttonOrangeGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      Color(0xFFFF5A00),
+      Color(0xFFFF8A2A),
+    ],
+  );
+
   static const LinearGradient buttonGoldGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
@@ -245,79 +296,88 @@ class AppTheme {
   );
 
   // ===============================================================
-  // BORDER RADIUS
+  // RADIUS
   // ===============================================================
 
-  /// Small UI elements.
   static const double radiusSmall = 10;
-
-  /// Medium controls.
   static const double radiusMedium = 14;
-
-  /// Standard cards.
   static const double radiusCard = 18;
-
-  /// Large cards.
   static const double radiusLarge = 24;
-
-  /// Hero / premium cards.
   static const double radiusHero = 28;
-
-  /// Bottom sheets.
   static const double radiusBottomSheet = 28;
 
   // ===============================================================
   // SPACING
   // ===============================================================
 
-  /// Small spacing.
   static const double space8 = 8;
-
-  /// Medium-small spacing.
   static const double space12 = 12;
-
-  /// Standard spacing.
   static const double space16 = 16;
-
-  /// Large spacing.
   static const double space24 = 24;
-
-  /// Extra large spacing.
   static const double space32 = 32;
 
   // ===============================================================
-  // COMMON DIMENSIONS
+  // DIMENSIONS
   // ===============================================================
 
-  /// Standard horizontal screen padding.
   static const double screenPadding = 16;
-
-  /// Large screen padding.
   static const double screenPaddingLarge = 24;
-
-  /// Standard input height.
   static const double inputHeight = 56;
-
-  /// Standard button height.
   static const double buttonHeight = 52;
-
-  /// Floating navigation bar height.
   static const double navigationHeight = 72;
 
   // ===============================================================
   // SHADOWS
   // ===============================================================
 
-  /// Very subtle shadow for elevated cards.
   static const List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Color(0x33000000),
-      blurRadius: 20,
+      color: Color(0x55000000),
+      blurRadius: 24,
+      offset: Offset(0, 10),
+    ),
+  ];
+
+  static const List<BoxShadow> softShadow = [
+    BoxShadow(
+      color: Color(0x40000000),
+      blurRadius: 18,
       offset: Offset(0, 8),
     ),
   ];
 
-  /// Subtle gold glow for premium/highlighted components.
+  static const List<BoxShadow> violetGlow = [
+    BoxShadow(
+      color: Color(0x407C3FF2),
+      blurRadius: 28,
+      spreadRadius: 1,
+    ),
+  ];
+
+  static const List<BoxShadow> violetStrongGlow = [
+    BoxShadow(
+      color: Color(0x667C3FF2),
+      blurRadius: 36,
+      spreadRadius: 2,
+    ),
+  ];
+
+  static const List<BoxShadow> orangeGlow = [
+    BoxShadow(
+      color: Color(0x40FF6A00),
+      blurRadius: 28,
+      spreadRadius: 1,
+    ),
+  ];
+
+  static const List<BoxShadow> orangeStrongGlow = [
+    BoxShadow(
+      color: Color(0x66FF6A00),
+      blurRadius: 36,
+      spreadRadius: 2,
+    ),
+  ];
+
   static const List<BoxShadow> goldGlow = [
     BoxShadow(
       color: Color(0x26D6A84F),
@@ -330,7 +390,6 @@ class AppTheme {
   // TEXT STYLES
   // ===============================================================
 
-  /// 32px bold display text.
   static const TextStyle display = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 32,
@@ -339,7 +398,6 @@ class AppTheme {
     height: 1.15,
   );
 
-  /// 28px semi-bold financial balance.
   static const TextStyle largeBalance = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 28,
@@ -348,7 +406,6 @@ class AppTheme {
     height: 1.15,
   );
 
-  /// 24px screen/page title.
   static const TextStyle pageTitle = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 24,
@@ -357,7 +414,6 @@ class AppTheme {
     height: 1.2,
   );
 
-  /// 18px section heading.
   static const TextStyle sectionTitle = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 18,
@@ -366,7 +422,6 @@ class AppTheme {
     height: 1.25,
   );
 
-  /// 16px card title.
   static const TextStyle cardTitle = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 16,
@@ -375,7 +430,6 @@ class AppTheme {
     height: 1.25,
   );
 
-  /// 14px standard body text.
   static const TextStyle body = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 14,
@@ -384,7 +438,6 @@ class AppTheme {
     height: 1.4,
   );
 
-  /// 13px secondary/supporting text.
   static const TextStyle secondary = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 13,
@@ -393,7 +446,6 @@ class AppTheme {
     height: 1.35,
   );
 
-  /// 12px caption / metadata.
   static const TextStyle caption = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 12,
@@ -402,7 +454,6 @@ class AppTheme {
     height: 1.3,
   );
 
-  /// Large financial amount.
   static const TextStyle financialAmount = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 32,
@@ -411,7 +462,6 @@ class AppTheme {
     height: 1.1,
   );
 
-  /// Medium financial amount.
   static const TextStyle financialAmountMedium = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 28,
@@ -420,7 +470,6 @@ class AppTheme {
     height: 1.1,
   );
 
-  /// Income amount.
   static const TextStyle incomeAmount = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 14,
@@ -428,7 +477,6 @@ class AppTheme {
     color: income,
   );
 
-  /// Expense amount.
   static const TextStyle expenseAmount = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 14,
@@ -436,7 +484,6 @@ class AppTheme {
     color: expense,
   );
 
-  /// Transfer amount.
   static const TextStyle transferAmount = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 14,
@@ -445,100 +492,68 @@ class AppTheme {
   );
 
   // ===============================================================
-  // THEME DATA
+  // THEME
   // ===============================================================
 
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
 
-      // -------------------------------------------------------------
-      // COLOR SCHEME
-      // -------------------------------------------------------------
-
       colorScheme: const ColorScheme.dark(
-        primary: gold,
-        onPrimary: Color(0xFF111111),
-
-        secondary: goldLight,
-        onSecondary: Color(0xFF111111),
-
+        primary: violet,
+        onPrimary: Colors.white,
+        secondary: violetBright,
+        onSecondary: Colors.white,
         surface: card,
         onSurface: textPrimary,
-
         error: expense,
         onError: textPrimary,
-
         outline: cardBorder,
         outlineVariant: divider,
       ),
 
-      // -------------------------------------------------------------
-      // SCAFFOLD
-      // -------------------------------------------------------------
-
       scaffoldBackgroundColor: background,
-
-      // -------------------------------------------------------------
-      // APP BAR
-      // -------------------------------------------------------------
 
       appBarTheme: const AppBarTheme(
         backgroundColor: background,
         foregroundColor: textPrimary,
         elevation: 0,
         centerTitle: true,
-
         titleTextStyle: TextStyle(
           fontFamily: 'Outfit',
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
-
         iconTheme: IconThemeData(
           color: textPrimary,
           size: 24,
         ),
       ),
 
-      // -------------------------------------------------------------
-      // TEXT THEME
-      // -------------------------------------------------------------
-
       textTheme: const TextTheme(
         displayLarge: display,
-
         headlineLarge: pageTitle,
         headlineMedium: sectionTitle,
-
         titleLarge: sectionTitle,
         titleMedium: cardTitle,
-
         bodyLarge: body,
         bodyMedium: body,
         bodySmall: secondary,
-
         labelLarge: TextStyle(
           fontFamily: 'Outfit',
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
-
         labelMedium: TextStyle(
           fontFamily: 'Outfit',
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: textSecondary,
         ),
-
         labelSmall: caption,
       ),
-
-      // -------------------------------------------------------------
-      // CARD
-      // -------------------------------------------------------------
 
       cardTheme: CardThemeData(
         color: card,
@@ -553,58 +568,46 @@ class AppTheme {
         ),
       ),
 
-      // -------------------------------------------------------------
-      // INPUT FIELDS
-      // -------------------------------------------------------------
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF141519),
-
+        fillColor: const Color(0xFF14141B),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
         ),
-
         hintStyle: secondary,
         labelStyle: secondary,
-
         floatingLabelStyle: const TextStyle(
           fontFamily: 'Outfit',
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: gold,
+          color: violetBright,
         ),
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: const BorderSide(
-            color: Color(0xFF2B2C31),
+            color: Color(0xFF2B2B33),
           ),
         ),
-
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: const BorderSide(
-            color: Color(0xFF2B2C31),
+            color: Color(0xFF2B2B33),
           ),
         ),
-
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: const BorderSide(
-            color: gold,
+            color: violet,
             width: 1.5,
           ),
         ),
-
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: const BorderSide(
             color: expense,
           ),
         ),
-
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: const BorderSide(
@@ -612,41 +615,30 @@ class AppTheme {
             width: 1.5,
           ),
         ),
-
         errorStyle: const TextStyle(
           fontFamily: 'Outfit',
           fontSize: 12,
           color: expense,
         ),
-
         prefixIconColor: textSecondary,
         suffixIconColor: textSecondary,
       ),
 
-      // -------------------------------------------------------------
-      // ELEVATED BUTTON
-      // -------------------------------------------------------------
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: gold,
-          foregroundColor: const Color(0xFF111111),
-
+          backgroundColor: violet,
+          foregroundColor: Colors.white,
           minimumSize: const Size(
             double.infinity,
             buttonHeight,
           ),
-
           elevation: 0,
-
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
           ),
-
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-
           textStyle: const TextStyle(
             fontFamily: 'Outfit',
             fontSize: 15,
@@ -655,27 +647,19 @@ class AppTheme {
         ),
       ),
 
-      // -------------------------------------------------------------
-      // OUTLINED BUTTON
-      // -------------------------------------------------------------
-
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: textPrimary,
-
           minimumSize: const Size(
             double.infinity,
             buttonHeight,
           ),
-
           side: const BorderSide(
             color: cardBorder,
           ),
-
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-
           textStyle: const TextStyle(
             fontFamily: 'Outfit',
             fontSize: 14,
@@ -683,15 +667,10 @@ class AppTheme {
           ),
         ),
       ),
-
-      // -------------------------------------------------------------
-      // TEXT BUTTON
-      // -------------------------------------------------------------
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: gold,
-
+          foregroundColor: violetBright,
           textStyle: const TextStyle(
             fontFamily: 'Outfit',
             fontSize: 14,
@@ -699,19 +678,11 @@ class AppTheme {
           ),
         ),
       ),
-
-      // -------------------------------------------------------------
-      // ICON THEME
-      // -------------------------------------------------------------
 
       iconTheme: const IconThemeData(
         color: textPrimary,
         size: 24,
       ),
-
-      // -------------------------------------------------------------
-      // DIVIDER
-      // -------------------------------------------------------------
 
       dividerTheme: const DividerThemeData(
         color: divider,
@@ -719,110 +690,74 @@ class AppTheme {
         space: 1,
       ),
 
-      // -------------------------------------------------------------
-      // FLOATING ACTION BUTTON
-      // -------------------------------------------------------------
-
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: gold,
-        foregroundColor: const Color(0xFF111111),
-
+        backgroundColor: violet,
+        foregroundColor: Colors.white,
         elevation: 0,
-
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
         ),
-
         iconSize: 26,
       ),
-
-      // -------------------------------------------------------------
-      // BOTTOM SHEET
-      // -------------------------------------------------------------
 
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: card,
         modalBackgroundColor: card,
         surfaceTintColor: Colors.transparent,
-
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(radiusBottomSheet),
           ),
         ),
-
         showDragHandle: true,
         dragHandleColor: Color(0xFF55565B),
       ),
 
-      // -------------------------------------------------------------
-      // DIALOG
-      // -------------------------------------------------------------
-
       dialogTheme: DialogThemeData(
         backgroundColor: card,
         surfaceTintColor: Colors.transparent,
-
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLarge),
         ),
-
         titleTextStyle: pageTitle,
         contentTextStyle: body,
       ),
 
-      // -------------------------------------------------------------
-      // CHIP
-      // -------------------------------------------------------------
-
       chipTheme: ChipThemeData(
         backgroundColor: backgroundSecondary,
-
-        selectedColor: gold,
-
+        selectedColor: violet,
         disabledColor: card,
-
         side: const BorderSide(
           color: cardBorder,
         ),
-
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-
         labelStyle: const TextStyle(
           fontFamily: 'Outfit',
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: textPrimary,
         ),
-
         secondaryLabelStyle: const TextStyle(
           fontFamily: 'Outfit',
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF111111),
+          color: Colors.white,
         ),
-
         padding: const EdgeInsets.symmetric(
           horizontal: 12,
           vertical: 8,
         ),
       ),
 
-      // -------------------------------------------------------------
-      // DROPDOWN
-      // -------------------------------------------------------------
-
       dropdownMenuTheme: DropdownMenuThemeData(
         textStyle: body,
-
         menuStyle: MenuStyle(
           backgroundColor: const WidgetStatePropertyAll(card),
-
-          surfaceTintColor:
-              const WidgetStatePropertyAll(Colors.transparent),
-
+          surfaceTintColor: const WidgetStatePropertyAll(
+            Colors.transparent,
+          ),
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(radiusMedium),
@@ -834,146 +769,105 @@ class AppTheme {
         ),
       ),
 
-      // -------------------------------------------------------------
-      // SNACKBAR
-      // -------------------------------------------------------------
-
       snackBarTheme: SnackBarThemeData(
         backgroundColor: cardElevated,
         contentTextStyle: body,
-
         behavior: SnackBarBehavior.floating,
-
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
         ),
-
-        actionTextColor: gold,
+        actionTextColor: violetBright,
       ),
 
-      // -------------------------------------------------------------
-      // PROGRESS INDICATOR
-      // -------------------------------------------------------------
-
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: gold,
+        color: violet,
         linearTrackColor: divider,
         circularTrackColor: divider,
       ),
-
-      // -------------------------------------------------------------
-      // CHECKBOX
-      // -------------------------------------------------------------
 
       checkboxTheme: CheckboxThemeData(
         side: const BorderSide(
           color: cardBorder,
           width: 1.5,
         ),
-
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
-
         fillColor: WidgetStateProperty.resolveWith<Color?>(
           (states) {
             if (states.contains(WidgetState.selected)) {
-              return gold;
+              return violet;
             }
 
             return Colors.transparent;
           },
         ),
-
         checkColor: const WidgetStatePropertyAll(
-          Color(0xFF111111),
+          Colors.white,
         ),
       ),
-
-      // -------------------------------------------------------------
-      // RADIO
-      // -------------------------------------------------------------
 
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.resolveWith<Color?>(
           (states) {
             if (states.contains(WidgetState.selected)) {
-              return gold;
+              return violet;
             }
 
             return textMuted;
           },
         ),
       ),
-
-      // -------------------------------------------------------------
-      // SWITCH
-      // -------------------------------------------------------------
 
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith<Color?>(
           (states) {
             if (states.contains(WidgetState.selected)) {
-              return Color(0xFF111111);
+              return Colors.white;
             }
 
             return textMuted;
           },
         ),
-
         trackColor: WidgetStateProperty.resolveWith<Color?>(
           (states) {
             if (states.contains(WidgetState.selected)) {
-              return gold;
+              return violet;
             }
 
             return cardElevated;
           },
         ),
-
         trackOutlineColor: const WidgetStatePropertyAll(
           cardBorder,
         ),
       ),
 
-      // -------------------------------------------------------------
-      // LIST TILE
-      // -------------------------------------------------------------
-
       listTileTheme: const ListTileThemeData(
         textColor: textPrimary,
         iconColor: textSecondary,
-
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 4,
         ),
-
         titleTextStyle: cardTitle,
         subtitleTextStyle: secondary,
       ),
 
-      // -------------------------------------------------------------
-      // NAVIGATION BAR
-      // -------------------------------------------------------------
-
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: backgroundSecondary,
-
         elevation: 0,
-
         height: navigationHeight,
-
-        indicatorColor: const Color(0x1FD6A84F),
-
-        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+        indicatorColor: Color(0x337C3FF2),
+        labelTextStyle:
+            WidgetStateProperty.resolveWith<TextStyle?>(
           (states) {
             if (states.contains(WidgetState.selected)) {
               return const TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: gold,
+                color: violetBright,
               );
             }
 
@@ -985,12 +879,12 @@ class AppTheme {
             );
           },
         ),
-
-        iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>(
+        iconTheme:
+            WidgetStateProperty.resolveWith<IconThemeData?>(
           (states) {
             if (states.contains(WidgetState.selected)) {
               return const IconThemeData(
-                color: gold,
+                color: violetBright,
                 size: 24,
               );
             }
