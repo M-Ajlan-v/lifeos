@@ -62,6 +62,22 @@ class _GiveGotScreenState extends State<GiveGotScreen> {
       final amount = int.parse(_amountController.text.trim());
       final description = _descriptionController.text.trim();
 
+      // GAVE validation:
+      // The amount being given cannot be greater than the
+      // current balance of the selected account.
+      if (widget.type == 'GAVE' &&
+          amount > _selectedAccount!.openingBalance) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Cannot add Gave. This amount is ₹$amount, '
+              'but the selected account balance is ₹${_selectedAccount!.openingBalance}.',
+            ),
+          ),
+        );
+        return;
+      }
+
       final success = await txProvider.createTransaction(
         type: widget.type,
         amount: amount,

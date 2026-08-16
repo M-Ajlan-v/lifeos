@@ -20,10 +20,29 @@ class TransactionService {
   // Watch all active transactions for a user (newest first)
   // -------------------------------------------------------
   Stream<List<Transaction>> watchActiveTransactions(int userId) {
-    return (db.select(db.transactions)
-          ..where((t) => t.userId.equals(userId) & t.isActive.equals(1))
-          ..orderBy([(t) => OrderingTerm.desc(t.transactionDate)]))
-        .watch();
+    final query = db.select(db.transactions).join([
+      leftOuterJoin(
+        db.contacts,
+        db.contacts.id.equalsExp(db.transactions.contactId),
+      ),
+    ])
+      ..where(
+        db.transactions.userId.equals(userId) &
+            db.transactions.isActive.equals(1) &
+            (
+              db.transactions.type.isNotIn(['GAVE', 'GOT']) |
+                  db.contacts.isActive.equals(1)
+            ),
+      )
+      ..orderBy([
+        OrderingTerm.desc(db.transactions.transactionDate),
+      ]);
+
+    return query.watch().map(
+          (rows) => rows
+              .map((row) => row.readTable(db.transactions))
+              .toList(),
+        );
   }
     // -------------------------------------------------------
   // Watch only INCOME + EXPENSE (for Cashbook screen)
