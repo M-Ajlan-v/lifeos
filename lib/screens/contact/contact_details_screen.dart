@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lifeos/providers/contact_provider.dart';
 import 'package:lifeos/database/app_database.dart';
-import 'package:lifeos/constants/contact_balance_type.dart';
 import 'package:lifeos/services/contact_service.dart';
 import 'package:lifeos/screens/contact/give_got_screen.dart';
 import 'package:lifeos/screens/transactions/transaction_detail_screen.dart';
+import 'package:lifeos/constants/theme/app_theme.dart';
+import 'package:lifeos/screens/contact/widget/contact_details_body.dart';
+
 import 'edit_contact_screen.dart';
 
 class ContactDetailsScreen extends StatefulWidget {
@@ -47,20 +49,47 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Deactivate Contact?'),
+        backgroundColor: AppTheme.cardElevated,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(
+            color: AppTheme.glassBorderStrong,
+          ),
+        ),
+        title: const Text(
+          'Deactivate Contact?',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         content: const Text(
           'This contact will be hidden from the list.\n'
           'All past transactions will remain safe.\n\n'
           'You can create a new contact with the same phone number later.',
+          style: TextStyle(
+            color: AppTheme.textSecondary,
+            fontFamily: 'Outfit',
+            height: 1.45,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.expense,
+            ),
             child: const Text('Deactivate'),
           ),
         ],
@@ -77,12 +106,17 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
     if (success) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contact deactivated')),
+        const SnackBar(
+          content: Text('Contact deactivated'),
+        ),
       );
     } else {
       final error = provider.error ?? 'Unable to deactivate contact';
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
+        SnackBar(
+          content: Text(error),
+        ),
       );
     }
   }
@@ -126,350 +160,177 @@ class _ContactDetailsScreenState extends State<ContactDetailsScreen> {
 
     if (contactProvider == null) {
       return const Scaffold(
-        body: Center(child: Text('Please login first')),
+        backgroundColor: AppTheme.background,
+        body: Center(
+          child: Text(
+            'Please login first',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontFamily: 'Outfit',
+            ),
+          ),
+        ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contact Details'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit Contact',
-            onPressed: () async {
-              // We need the latest contact, so we read it from the stream below
-              // For simplicity we open edit from the body
-            },
+  backgroundColor: AppTheme.background,
+  body: StreamBuilder<Contact?>(
+    key: ValueKey('contact-$_refreshKey'),
+    stream: contactService.watchContact(
+      userId: contactProvider.userId,
+      contactId: widget.contactId,
+    ),
+    builder: (context, contactSnapshot) {
+      if (contactSnapshot.connectionState == ConnectionState.waiting &&
+          !contactSnapshot.hasData) {
+        return const Center(
+          child: CircularProgressIndicator(
+            color: AppTheme.violetBright,
+            strokeWidth: 2.5,
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Deactivate Contact',
-            onPressed: () => _confirmDeactivate(contactProvider),
+        );
+      }
+
+      if (contactSnapshot.hasError) {
+        return Center(
+          child: Text(
+            'Error: ${contactSnapshot.error}',
+            style: const TextStyle(
+              color: AppTheme.expense,
+              fontFamily: 'Outfit',
+            ),
+          ),
+        );
+      }
+
+      final contact = contactSnapshot.data;
+
+      if (contact == null) {
+        return const Center(
+          child: Text(
+            'Contact not found',
+            style: TextStyle(
+              color: AppTheme.textSecondary,
+              fontFamily: 'Outfit',
+            ),
+          ),
+        );
+      }
+
+      return Column(
+        children: [
+          AppBar(
+            backgroundColor: AppTheme.background,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+              leading: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppTheme.textPrimary,
+                size: 20,
+              ),
+            ),
+            title: const Text(
+              'Contact Details',
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: AppTheme.textSecondary,
+                ),
+                tooltip: 'Edit Contact',
+                onPressed: () => _openEdit(contact),
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: AppTheme.textSecondary,
+                ),
+                tooltip: 'Deactivate Contact',
+                onPressed: () => _confirmDeactivate(contactProvider),
+              ),
+            ],
+          ),
+
+          Expanded(
+            child: RefreshIndicator(
+              color: AppTheme.violetBright,
+              backgroundColor: AppTheme.cardElevated,
+              onRefresh: () async {
+                _forceRefresh();
+
+                await Future.delayed(
+                  const Duration(milliseconds: 400),
+                );
+              },
+              child: ContactDetailsBody(
+                contact: contact,
+                onQuickTransaction: _openQuickTransaction,
+                onOpenTransaction: _openTransactionDetail,
+                onEdit: () => _openEdit(contact),
+              ),
+            ),
           ),
         ],
-      ),
-      body: StreamBuilder<Contact?>(
-        // Key forces the stream to restart when we call _forceRefresh
-        key: ValueKey('contact-$_refreshKey'),
-        stream: contactService.watchContact(
-          userId: contactProvider.userId,
-          contactId: widget.contactId,
-        ),
-        builder: (context, contactSnapshot) {
-          if (contactSnapshot.connectionState == ConnectionState.waiting &&
-              !contactSnapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      );
+    },
+  ),
 
-          if (contactSnapshot.hasError) {
-            return Center(child: Text('Error: ${contactSnapshot.error}'));
-          }
-
-          final contact = contactSnapshot.data;
-
-          if (contact == null) {
-            return const Center(child: Text('Contact not found'));
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              _forceRefresh();
-              // Small delay so the indicator is visible
-              await Future.delayed(const Duration(milliseconds: 400));
-            },
-            child: _ContactDetailsBody(
-              contact: contact,
-              onQuickTransaction: _openQuickTransaction,
-              onOpenTransaction: _openTransactionDetail,
-              onEdit: () => _openEdit(contact),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _ContactDetailsBody extends StatelessWidget {
-  final Contact contact;
-  final void Function(String type) onQuickTransaction;
-  final void Function(int transactionId) onOpenTransaction;
-  final VoidCallback onEdit;
-
-  const _ContactDetailsBody({
-    required this.contact,
-    required this.onQuickTransaction,
-    required this.onOpenTransaction,
-    required this.onEdit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isWillGet = contact.currentType == ContactBalanceType.willGet;
-    final isWillGive = contact.currentType == ContactBalanceType.willGive;
-
-    Color statusColor = Colors.grey;
-    String statusText = 'Settled';
-
-    if (isWillGet) {
-      statusColor = Colors.green;
-      statusText = 'You Will Get ₹${contact.currentAmount}';
-    } else if (isWillGive) {
-      statusColor = Colors.red;
-      statusText = 'You will Give ₹${contact.currentAmount}';
-    }
-
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(), // needed for RefreshIndicator
-      padding: const EdgeInsets.all(16),
+  bottomNavigationBar: SafeArea(
+    minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+    child: Row(
       children: [
-        // Avatar + Name
-        Center(
-          child: CircleAvatar(
-            radius: 40,
-            child: Text(
-              contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
-              style: const TextStyle(fontSize: 32),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Center(
-          child: Text(
-            contact.name,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Center(
-          child: Text(
-            contact.phone,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Current Balance Card
-        Card(
-          color: statusColor.withOpacity(0.12),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Text(
-                  'Current Balance',
-                  style: TextStyle(color: statusColor, fontSize: 14),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  statusText,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 28),
-
-        // Gave / Got buttons
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => onQuickTransaction('GAVE'),
-                icon: const Icon(Icons.arrow_upward),
-                label: const Text('Gave'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
+        Expanded(
+          child: SizedBox(
+            height: 54,
+            child: FilledButton.icon(
+              onPressed: () => _openQuickTransaction('GAVE'),
+              icon: const Icon(Icons.north_east_rounded),
+              label: const Text('Give'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.expense,
+                foregroundColor: Colors.white,
+                elevation: 5,
+                shadowColor: AppTheme.expense.withOpacity(0.25),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(17),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => onQuickTransaction('GOT'),
-                icon: const Icon(Icons.arrow_downward),
-                label: const Text('Got'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: SizedBox(
+            height: 54,
+            child: FilledButton.icon(
+              onPressed: () => _openQuickTransaction('GOT'),
+              icon: const Icon(Icons.south_west_rounded),
+              label: const Text('Got'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.income,
+                foregroundColor: Colors.white,
+                elevation: 5,
+                shadowColor: AppTheme.income.withOpacity(0.25),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(17),
                 ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 28),
-
-        // Contact Information
-        const Text(
-          'Contact Information',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Opening Balance'),
-          trailing: Text(
-            contact.openingAmount == 0
-                ? 'Settled'
-                : '${contact.openingType == ContactBalanceType.willGet ? "Got" : "Gave"} ₹${contact.openingAmount}',
           ),
-        ),
-        if (contact.description != null && contact.description!.isNotEmpty)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Description'),
-            subtitle: Text(contact.description!),
-          ),
-        const SizedBox(height: 28),
-
-        // Transaction History title
-        const Text(
-          'Transaction History',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-
-        // Reactive transaction list
-        _TransactionHistoryWidget(
-          contactId: contact.id,
-          onOpenTransaction: onOpenTransaction,
         ),
       ],
-    );
-  }
-}
-
-class _TransactionHistoryWidget extends StatelessWidget {
-  final int contactId;
-  final void Function(int transactionId) onOpenTransaction;
-
-  const _TransactionHistoryWidget({
-    required this.contactId,
-    required this.onOpenTransaction,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final contactService = context.read<ContactService>();
-    final contactProvider = context.watch<ContactProvider?>();
-
-    if (contactProvider == null) {
-      return const SizedBox.shrink();
-    }
-
-    return StreamBuilder<List<Transaction>>(
-      stream: contactService.watchContactTransactions(
-        userId: contactProvider.userId,
-        contactId: contactId,
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-
-        final transactions = snapshot.data ?? [];
-
-        if (transactions.isEmpty) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-              child: Center(
-                child: Text(
-                  'No transactions yet',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-              ),
-            ),
-          );
-        }
-
-        return Column(
-          children: transactions.map((tx) {
-            return _TransactionTile(
-              transaction: tx,
-              onTap: () => onOpenTransaction(tx.id),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-}
-
-class _TransactionTile extends StatelessWidget {
-  final Transaction transaction;
-  final VoidCallback onTap;
-
-  const _TransactionTile({
-    required this.transaction,
-    required this.onTap,
-  });
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isGave = transaction.type == 'GAVE';
-    final color = isGave ? Colors.red : Colors.green;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        onTap: onTap,
-        leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
-          child: Icon(
-            isGave ? Icons.arrow_upward : Icons.arrow_downward,
-            color: color,
-          ),
-        ),
-        title: Text(
-          '${isGave ? 'Gave' : 'Got'} ₹${transaction.amount}',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_formatDate(transaction.transactionDate)),
-            if (transaction.description != null &&
-                transaction.description!.isNotEmpty)
-              Text(
-                transaction.description!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
-        ),
-        trailing: Text(
-          isGave ? '-' : '+',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-      ),
-    );
+    ),
+  ),
+);
   }
 }

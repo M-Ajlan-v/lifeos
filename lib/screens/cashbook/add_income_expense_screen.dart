@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:lifeos/screens/cashbook/widget/cashbook_account_field.dart';
+import 'package:lifeos/screens/cashbook/widget/cashbook_amount_field.dart';
+import 'package:lifeos/screens/cashbook/widget/cashbook_category_field.dart';
+import 'package:lifeos/screens/cashbook/widget/cashbook_date_field.dart';
+import 'package:lifeos/screens/cashbook/widget/cashbook_description_field.dart';
 import 'package:provider/provider.dart';
 import 'package:lifeos/providers/category_provider.dart';
 import 'package:lifeos/providers/transaction_provider.dart';
 import 'package:lifeos/providers/account_provider.dart';
 import 'package:lifeos/database/app_database.dart';
+import 'package:lifeos/constants/theme/app_theme.dart';
 
 class AddIncomeExpenseScreen extends StatefulWidget {
   final String type; // 'INCOME', 'EXPENSE', 'GAVE', 'GOT'
@@ -17,7 +22,8 @@ class AddIncomeExpenseScreen extends StatefulWidget {
   });
 
   @override
-  State<AddIncomeExpenseScreen> createState() => _AddIncomeExpenseScreenState();
+  State<AddIncomeExpenseScreen> createState() =>
+      _AddIncomeExpenseScreenState();
 }
 
 class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
@@ -45,6 +51,7 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 1)),
     );
+
     if (picked != null) {
       setState(() => _selectedDate = picked);
     }
@@ -52,17 +59,23 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+
     if (_selectedAccount == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an account')),
+        const SnackBar(
+          content: Text('Please select an account'),
+        ),
       );
       return;
     }
 
     final categoryName = _categoryController.text.trim();
+
     if (categoryName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a category')),
+        const SnackBar(
+          content: Text('Please enter a category'),
+        ),
       );
       return;
     }
@@ -71,7 +84,11 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
     final categoryProvider = context.read<CategoryProvider?>();
     final authUserId = context.read<TransactionProvider?>()?.userId;
 
-    if (txProvider == null || authUserId == null || categoryProvider == null) return;
+    if (txProvider == null ||
+        authUserId == null ||
+        categoryProvider == null) {
+      return;
+    }
 
     try {
       // 1. Get or create category
@@ -84,11 +101,15 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
       final amount = int.parse(_amountController.text.trim());
       final description = _descriptionController.text.trim();
 
-      if (widget.type == 'EXPENSE' && _selectedAccount != null && amount > _selectedAccount!.openingBalance) {
+      if (widget.type == 'EXPENSE' &&
+          _selectedAccount != null &&
+          amount > _selectedAccount!.openingBalance) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Cannot add expense. This expense is ₹$amount, but the selected account balance is ₹${_selectedAccount!.openingBalance}.',
+              'Cannot add expense. This expense is ₹$amount, '
+              'but the selected account balance is '
+              '₹${_selectedAccount!.openingBalance}.',
             ),
           ),
         );
@@ -110,13 +131,22 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(txProvider.error ?? 'Unable to save')),
+          SnackBar(
+            content: Text(
+              txProvider.error ?? 'Unable to save',
+            ),
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
       );
     }
   }
@@ -126,225 +156,290 @@ class _AddIncomeExpenseScreenState extends State<AddIncomeExpenseScreen> {
     final txProvider = context.watch<TransactionProvider?>();
     final accountProvider = context.watch<AccountProvider?>();
     final categoryProvider = context.watch<CategoryProvider?>();
+
     final isSubmitting = txProvider?.isSubmitting ?? false;
     final userId = txProvider?.userId;
 
     final isIncome = widget.type == 'INCOME';
-    final isContactTransaction = widget.type == 'GAVE' || widget.type == 'GOT';
+    final isContactTransaction =
+        widget.type == 'GAVE' || widget.type == 'GOT';
+
+    final accentColor = isIncome
+        ? AppTheme.income
+        : AppTheme.expense;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: Text(isIncome ? 'Add Income' : 'Add Expense'),
+        backgroundColor: AppTheme.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+      leading: IconButton(
+        onPressed: () => Navigator.of(context).pop(),
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: AppTheme.textPrimary,
+          size: 20,
+        ),
+      ),   
+        iconTheme: const IconThemeData(
+          color: AppTheme.textPrimary,
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: accentColor.withOpacity(0.22),
+                ),
+              ),
+              child: Icon(
+                isIncome
+                    ? Icons.south_west_rounded
+                    : Icons.north_east_rounded,
+                color: accentColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              isIncome ? 'Add Income' : 'Add Expense',
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              28,
+            ),
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
-              // Amount
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount *',
-                  border: OutlineInputBorder(),
-                  prefixText: '₹ ',
+              // ---------------------------------------------------------
+              // HEADER
+              // ---------------------------------------------------------
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: isIncome
+                      ? const LinearGradient(
+                          colors: [
+                            AppTheme.incomeDark,
+                            AppTheme.cardElevated,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : const LinearGradient(
+                          colors: [
+                            AppTheme.expenseDark,
+                            AppTheme.cardElevated,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: accentColor.withOpacity(0.18),
+                  ),
                 ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Amount is required';
-                  final n = int.tryParse(v.trim());
-                  if (n == null || n <= 0) return 'Enter valid amount';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Account
-              StreamBuilder<List<Account>>(
-                stream: accountProvider?.accountsStream,
-                builder: (context, snapshot) {
-                  final accounts = snapshot.data ?? [];
-                  return DropdownButtonFormField<Account>(
-                    value: _selectedAccount,
-                    decoration: const InputDecoration(
-                      labelText: 'Account *',
-                      border: OutlineInputBorder(),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: accentColor.withOpacity(0.14),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isIncome
+                            ? Icons.arrow_downward_rounded
+                            : Icons.arrow_upward_rounded,
+                        color: accentColor,
+                        size: 24,
+                      ),
                     ),
-                    items: accounts.map((a) {
-                      return DropdownMenuItem(
-                        value: a,
-                        child: Text('${a.name} (₹${a.openingBalance})'),
-                      );
-                    }).toList(),
-                    onChanged: (value) => setState(() => _selectedAccount = value),
-                    validator: (v) => v == null ? 'Select an account' : null,
-                  );
-                },
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        isIncome
+                            ? 'Record money coming into your account.'
+                            : 'Record money spent from your account.',
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontFamily: 'Outfit',
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+
+              const SizedBox(height: 22),
+
+              // ---------------------------------------------------------
+              // AMOUNT
+              // ---------------------------------------------------------
+              CashbookAmountField(
+                controller: _amountController,
+                accentColor: accentColor,
+              ),
+
               const SizedBox(height: 16),
 
-              // Category (with suggestions)
-              if (!isContactTransaction && userId != null && categoryProvider != null)
-                StreamBuilder<List<Category>>(
-                  stream: categoryProvider.categoriesStream(widget.type),
-                  builder: (context, snapshot) {
-                    final categories = snapshot.data ?? [];
+              // ---------------------------------------------------------
+              // ACCOUNT
+              // ---------------------------------------------------------
+              CashbookAccountField(
+                accountStream: accountProvider?.accountsStream,
+                selectedAccount: _selectedAccount,
+                onChanged: (value) {
+                  setState(() => _selectedAccount = value);
+                },
+              ),
 
-                    return Autocomplete<String>(
-                      optionsBuilder: (textEditingValue) {
-                        final query = textEditingValue.text.trim().toLowerCase();
-
-                        final filtered = categories.where((c) {
-                          final name = c.name.toLowerCase();
-                          if (query.isEmpty) return true;
-                          return name.contains(query);
-                        }).toList();
-
-                        filtered.sort((a, b) {
-                          final aName = a.name.toLowerCase();
-                          final bName = b.name.toLowerCase();
-
-                          if (query.isEmpty) {
-                            return aName.compareTo(bName);
-                          }
-
-                          final aRank = aName.startsWith(query)
-                              ? 0
-                              : (aName.contains(query) ? 1 : 2);
-                          final bRank = bName.startsWith(query)
-                              ? 0
-                              : (bName.contains(query) ? 1 : 2);
-
-                          if (aRank != bRank) {
-                            return aRank.compareTo(bRank);
-                          }
-
-                          final aIndex = aName.indexOf(query);
-                          final bIndex = bName.indexOf(query);
-
-                          if (aIndex != bIndex) {
-                            final aPos = aIndex == -1 ? 999 : aIndex;
-                            final bPos = bIndex == -1 ? 999 : bIndex;
-                            return aPos.compareTo(bPos);
-                          }
-
-                          final aLen = aName.length;
-                          final bLen = bName.length;
-
-                          if (aLen != bLen) {
-                            return aLen.compareTo(bLen);
-                          }
-
-                          return aName.compareTo(bName);
-                        });
-
-                        return filtered.map((c) => c.name).toList();
-                      },
-                      onSelected: (value) {
-                        _categoryController.text = value;
-                        _selectedCategoryName = value;
-                      },
-                      optionsViewBuilder: (context, onSelected, options) {
-                        return Align(
-                          alignment: Alignment.topLeft,
-                          child: Material(
-                            elevation: 4,
-                            borderRadius: BorderRadius.circular(8),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxHeight: 220),
-                              child: ListView.builder(
-                                padding: EdgeInsets.zero,
-                                itemCount: options.length,
-                                itemBuilder: (context, index) {
-                                  final option = options.elementAt(index);
-                                  return ListTile(
-                                    title: Text(option),
-                                    onTap: () => onSelected(option),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                        controller.text = _categoryController.text;
-                        controller.selection = _categoryController.selection;
-
-                        return TextFormField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: const InputDecoration(
-                            labelText: 'Category *',
-                            border: OutlineInputBorder(),
-                            hintText: 'Type a category or select one',
-                          ),
-                          textCapitalization: TextCapitalization.words,
-                          onChanged: (value) {
-                            _categoryController.text = value;
-                            _categoryController.selection = TextSelection.collapsed(
-                              offset: value.length,
-                            );
-                          },
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Category is required';
-                            }
-                            return null;
-                          },
-                        );
-                      },
-                    );
+              // ---------------------------------------------------------
+              // CATEGORY
+              // ---------------------------------------------------------
+              if (!isContactTransaction &&
+                  userId != null &&
+                  categoryProvider != null) ...[
+                const SizedBox(height: 16),
+                CashbookCategoryField(
+                  categoryProvider: categoryProvider,
+                  type: widget.type,
+                  controller: _categoryController,
+                  selectedCategoryName: _selectedCategoryName,
+                  accentColor: accentColor,
+                  onSelected: (value) {
+                    _categoryController.text = value;
+                    _selectedCategoryName = value;
                   },
                 ),
+              ],
+
               const SizedBox(height: 16),
 
-              // Date
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Date'),
-                subtitle: Text(
-                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                ),
-                trailing: const Icon(Icons.calendar_today),
+              // ---------------------------------------------------------
+              // DATE
+              // ---------------------------------------------------------
+              CashbookDateField(
+                selectedDate: _selectedDate,
+                accentColor: accentColor,
                 onTap: _pickDate,
               ),
+
               const SizedBox(height: 16),
 
-              // Description
-              TextFormField(
+              // ---------------------------------------------------------
+              // DESCRIPTION
+              // ---------------------------------------------------------
+              CashbookDescriptionField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
+                accentColor: accentColor,
               ),
-              const SizedBox(height: 32),
 
+              const SizedBox(height: 30),
+
+              // ---------------------------------------------------------
+              // SAVE
+              // ---------------------------------------------------------
               SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isSubmitting ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isIncome ? Colors.green : Colors.red,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                height: 54,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: isSubmitting
+                        ? null
+                        : LinearGradient(
+                            colors: isIncome
+                                ? const [
+                                    AppTheme.incomeDark,
+                                    AppTheme.income,
+                                  ]
+                                : const [
+                                    AppTheme.expenseDark,
+                                    AppTheme.expense,
+                                  ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
                           ),
-                        )
-                      : Text(
-                          isIncome ? 'Save Income' : 'Save Expense',
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                    color: isSubmitting
+                        ? AppTheme.surface
+                        : null,
+                    borderRadius: BorderRadius.circular(17),
+                    boxShadow: isSubmitting
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: accentColor.withOpacity(0.22),
+                              blurRadius: 18,
+                              spreadRadius: -4,
+                              offset: const Offset(0, 7),
+                            ),
+                          ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: isSubmitting ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      disabledBackgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor: AppTheme.textMuted,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppTheme.textPrimary,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                isIncome
+                                    ? Icons.arrow_downward_rounded
+                                    : Icons.arrow_upward_rounded,
+                                size: 19,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isIncome
+                                    ? 'Save Income'
+                                    : 'Save Expense',
+                                style: const TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             ],

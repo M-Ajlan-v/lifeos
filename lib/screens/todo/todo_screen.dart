@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:lifeos/providers/hte_provider.dart';
 import 'package:lifeos/database/app_database.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import 'package:lifeos/constants/theme/app_theme.dart';
+import 'package:lifeos/providers/hte_provider.dart';
+
 import 'add_edit_todo_screen.dart';
+import 'widget/todo_empty_state.dart';
+import 'widget/todo_tile.dart';
 
 class TodoScreen extends StatelessWidget {
   const TodoScreen({super.key});
@@ -11,137 +15,118 @@ class TodoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Todos'),
+        backgroundColor: AppTheme.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        titleSpacing: 16,
+        title: const Text(
+          'Todos',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontFamily: 'Outfit',
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AddEditTodoScreen()),
-              );
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                gradient: AppTheme.buttonGradient,
+                borderRadius: BorderRadius.circular(13),
+                boxShadow: AppTheme.violetGlow,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(13),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AddEditTodoScreen(),
+                      ),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.add_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: Consumer<HteProvider?>(
-        builder: (context, provider, _) {
-          if (provider == null) {
-            return const Center(child: Text('Please login'));
-          }
+  builder: (context, provider, _) {
+    if (provider == null) {
+      return const Center(
+        child: Text(
+          'Please login',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontFamily: 'Outfit',
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
 
-          final todos = provider.todosEvents
-              .where((e) => e.type == 'TODO')
-              .toList();
-
-          if (todos.isEmpty) {
-            return const Center(child: Text('No todos yet'));
-          }
-
-          return ListView.builder(
-            itemCount: todos.length,
-            itemBuilder: (context, index) {
-              final item = todos[index];
-              return _TodoTile(item: item);
-            },
+    return StreamBuilder<List<TodosEvent>>(
+      stream: provider.todosEventsStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState ==
+                ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
           );
-        },
-      ),
-    );
-  }
-}
+        }
 
-class _TodoTile extends StatelessWidget {
-  final TodosEvent item;
+        final allItems =
+            snapshot.data ?? const <TodosEvent>[];
 
-  const _TodoTile({required this.item});
+        final todos = allItems
+            .where(
+              (e) =>
+                  e.type.trim().toUpperCase() == 'TODO',
+            )
+            .toList();
 
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.read<HteProvider?>();
+        if (todos.isEmpty) {
+          return const TodoEmptyState();
+        }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: ListTile(
-        title: Text(item.title),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (item.description != null && item.description!.isNotEmpty)
-              Text(item.description!),
-            if (item.notificationEnabled == 1 && item.date != null)
-              Text(
-                '${item.date} ${item.time ?? ''}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            10,
+            16,
+            110,
+          ),
+          itemCount: todos.length,
+          itemBuilder: (context, index) {
+            final item = todos[index];
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TodoTile(
+                item: item,
               ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.check_circle_outline, color: Colors.green),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Complete Todo'),
-                    content: const Text('Mark as completed and delete?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Complete'),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true && provider != null) {
-                  await provider.completeTodo(item.id);
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Todo'),
-                    content: const Text('Are you sure?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        child: const Text('Delete'),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true && provider != null) {
-                  await provider.deleteTodoEvent(item.id);
-                }
-              },
-            ),
-          ],
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AddEditTodoScreen(existing: item),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
+    );
+  },
+),
     );
   }
 }

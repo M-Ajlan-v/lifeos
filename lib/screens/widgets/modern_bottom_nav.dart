@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../constants/theme/app_theme.dart';
 
 class ModernBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -13,19 +14,27 @@ class ModernBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 18),
       padding: const EdgeInsets.symmetric(
         horizontal: 8,
-        vertical: 12,
+        vertical: 10,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        color: AppTheme.cardElevated,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: AppTheme.glassBorderStrong,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(0.38),
+            blurRadius: 26,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: AppTheme.violet.withOpacity(0.10),
+            blurRadius: 22,
+            spreadRadius: -4,
           ),
         ],
       ),
@@ -38,21 +47,18 @@ class ModernBottomNav extends StatelessWidget {
             isSelected: currentIndex == 0,
             onTap: () => onTap(0),
           ),
-
           _NavItem(
             icon: Icons.contacts_rounded,
             label: 'Contacts',
             isSelected: currentIndex == 1,
             onTap: () => onTap(1),
           ),
-
           _NavItem(
             icon: Icons.book_rounded,
             label: 'Cashbook',
             isSelected: currentIndex == 2,
             onTap: () => onTap(2),
           ),
-
           _NavItem(
             icon: Icons.account_balance_wallet_rounded,
             label: 'Accounts',
@@ -84,41 +90,72 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 14 : 10,
-          vertical: 12,
+        width: isSelected ? 88 : 62,
+        height: 64,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 7,
         ),
         decoration: BoxDecoration(
+          gradient: isSelected
+              ? AppTheme.violetGlowGradient
+              : null,
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.12)
+              ? null
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(22),
+          border: isSelected
+              ? Border.all(
+                  color: AppTheme.violetBright.withOpacity(0.20),
+                )
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.violet.withOpacity(0.24),
+                    blurRadius: 16,
+                    spreadRadius: -3,
+                  ),
+                ]
+              : null,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isSelected
-                  ? Theme.of(context).primaryColor
-                  : Colors.grey[600],
-            ),
-
-            if (isSelected) ...[
-              const SizedBox(width: 6),
-
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).primaryColor,
-                ),
+            AnimatedScale(
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOutBack,
+              scale: isSelected ? 1.08 : 1.0,
+              child: Icon(
+                icon,
+                size: 23,
+                color: isSelected
+                    ? AppTheme.violetBright
+                    : AppTheme.textSecondary,
               ),
-            ],
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              child: isSelected
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
       ),

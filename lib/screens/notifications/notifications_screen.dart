@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:lifeos/providers/hte_provider.dart';
 import 'package:lifeos/database/app_database.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import 'package:lifeos/constants/theme/app_theme.dart';
+import 'package:lifeos/providers/hte_provider.dart';
+
+import 'widget/notification_empty_state.dart';
+import 'widget/notification_list_item.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -10,102 +14,94 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        backgroundColor: AppTheme.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+          leading: IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppTheme.textPrimary,
+              size: 20,
+            ),
+          ),
+        titleSpacing: 16,
+        title: const Text(
+          'Notifications',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontFamily: 'Outfit',
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
       body: Consumer<HteProvider?>(
-        builder: (context, provider, _) {
-          if (provider == null) {
-            return const Center(child: Text('Please login'));
-          }
+  builder: (context, provider, _) {
+    if (provider == null) {
+      return const Center(
+        child: Text(
+          'Please login',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontFamily: 'Outfit',
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
 
-          final logs = provider.firedNotifications;
-
-          if (logs.isEmpty) {
-            return const Center(
-              child: Text('No notifications yet'),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: logs.length,
-            itemBuilder: (context, index) {
-              final log = logs[index];
-              return _NotificationTile(log: log);
-            },
+    return StreamBuilder<List<NotificationLogData>>(
+      stream: provider.firedNotificationsStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState ==
+                ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
           );
-        },
-      ),
-    );
-  }
-}
+        }
 
-class _NotificationTile extends StatelessWidget {
-  final NotificationLogData log;
+        final logs =
+            snapshot.data ??
+            const <NotificationLogData>[];
 
-  const _NotificationTile({required this.log});
+        if (logs.isEmpty) {
+          return const NotificationEmptyState();
+        }
 
-  IconData get _icon {
-    switch (log.sourceType) {
-      case 'TODO':
-        return Icons.check_box;
-      case 'EVENT':
-        return Icons.event;
-      case 'HABIT':
-        return Icons.repeat;
-      default:
-        return Icons.notifications;
-    }
-  }
-
-  Color get _color {
-    switch (log.sourceType) {
-      case 'TODO':
-        return Colors.blue;
-      case 'EVENT':
-        return Colors.orange;
-      case 'HABIT':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final firedAt = log.firedAt != null
-        ? DateFormat('dd MMM yyyy, HH:mm').format(log.firedAt!)
-        : 'Unknown time';
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _color.withOpacity(0.15),
-          child: Icon(_icon, color: _color),
-        ),
-        title: Text(log.title ?? 'Notification'),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (log.body != null && log.body!.isNotEmpty)
-              Text(log.body!),
-            const SizedBox(height: 4),
-            Text(
-              firedAt,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            Text(
-              log.sourceType ?? '',
-              style: TextStyle(
-                fontSize: 11,
-                color: _color,
-                fontWeight: FontWeight.bold,
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            110,
+          ),
+          itemCount: logs.length,
+          separatorBuilder: (_, __) {
+            return const Padding(
+              padding: EdgeInsets.only(left: 58),
+              child: Divider(
+                color: AppTheme.divider,
+                height: 1,
+                thickness: 1,
               ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+          itemBuilder: (context, index) {
+            final log = logs[index];
+
+            return NotificationListItem(
+              log: log,
+            );
+          },
+        );
+      },
+    );
+  },
+),
     );
   }
 }

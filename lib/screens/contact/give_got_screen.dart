@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:lifeos/database/app_database.dart';
 import 'package:lifeos/providers/account_provider.dart';
 import 'package:lifeos/providers/transaction_provider.dart';
+import 'package:lifeos/constants/theme/app_theme.dart';
+import 'package:lifeos/screens/contact/widget/give_got_account_field.dart';
+import 'package:lifeos/screens/contact/widget/give_got_date_field.dart';
 
 class GiveGotScreen extends StatefulWidget {
   final String type; // 'GAVE' or 'GOT'
@@ -50,7 +53,9 @@ class _GiveGotScreenState extends State<GiveGotScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedAccount == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an account')),
+        const SnackBar(
+          content: Text('Please select an account'),
+        ),
       );
       return;
     }
@@ -71,7 +76,8 @@ class _GiveGotScreenState extends State<GiveGotScreen> {
           SnackBar(
             content: Text(
               'Cannot add Gave. This amount is ₹$amount, '
-              'but the selected account balance is ₹${_selectedAccount!.openingBalance}.',
+              'but the selected account balance is '
+              '₹${_selectedAccount!.openingBalance}.',
             ),
           ),
         );
@@ -95,13 +101,22 @@ class _GiveGotScreenState extends State<GiveGotScreen> {
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(txProvider.error ?? 'Unable to save')),
+          SnackBar(
+            content: Text(
+              txProvider.error ?? 'Unable to save',
+            ),
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
       );
     }
   }
@@ -112,96 +127,377 @@ class _GiveGotScreenState extends State<GiveGotScreen> {
     final accountProvider = context.watch<AccountProvider?>();
     final isSubmitting = txProvider?.isSubmitting ?? false;
 
+    final isGave = widget.type == 'GAVE';
+    final accentColor = isGave
+        ? AppTheme.expense
+        : AppTheme.income;
+
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: Text(widget.type == 'GAVE' ? 'Add Gave' : 'Add Got'),
+        backgroundColor: AppTheme.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.textPrimary,
+            size: 20,
+          ),
+        ), 
+        title: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: accentColor.withOpacity(0.22),
+                ),
+              ),
+              child: Icon(
+                isGave
+                    ? Icons.north_east_rounded
+                    : Icons.south_west_rounded,
+                color: accentColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              isGave ? 'Add Gave' : 'Add Got',
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        iconTheme: const IconThemeData(
+          color: AppTheme.textPrimary,
+        ),
       ),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              28,
+            ),
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
+              // ---------- Header ----------
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: isGave
+                      ? LinearGradient(
+                          colors: [
+                            AppTheme.expenseDark,
+                            AppTheme.cardElevated,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : LinearGradient(
+                          colors: [
+                            AppTheme.incomeDark,
+                            AppTheme.cardElevated,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: accentColor.withOpacity(0.18),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: accentColor.withOpacity(0.14),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isGave
+                            ? Icons.arrow_upward_rounded
+                            : Icons.arrow_downward_rounded,
+                        color: accentColor,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        isGave
+                            ? 'Record money you gave to this contact.'
+                            : 'Record money you got from this contact.',
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontFamily: 'Outfit',
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              // ---------- Amount ----------
               TextFormField(
                 controller: _amountController,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                cursorColor: accentColor,
+                decoration: InputDecoration(
                   labelText: 'Amount *',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(
+                    color: AppTheme.textSecondary,
+                  ),
+                  floatingLabelStyle: TextStyle(
+                    color: accentColor,
+                  ),
                   prefixText: '₹ ',
+                  prefixStyle: TextStyle(
+                    color: accentColor,
+                    fontFamily: 'Outfit',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.currency_rupee_rounded,
+                    color: accentColor,
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.cardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: BorderSide(
+                      color: accentColor,
+                      width: 1.2,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                    ),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                    ),
+                  ),
                 ),
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Amount is required';
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Amount is required';
+                  }
+
                   final n = int.tryParse(v.trim());
-                  if (n == null || n <= 0) return 'Enter valid amount';
+
+                  if (n == null || n <= 0) {
+                    return 'Enter valid amount';
+                  }
+
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
-              StreamBuilder<List<Account>>(
-                stream: accountProvider?.accountsStream,
-                builder: (context, snapshot) {
-                  final accounts = snapshot.data ?? [];
-                  return DropdownButtonFormField<Account>(
-                    value: _selectedAccount,
-                    decoration: const InputDecoration(
-                      labelText: 'Account *',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: accounts.map((a) {
-                      return DropdownMenuItem(
-                        value: a,
-                        child: Text('${a.name} (₹${a.openingBalance})'),
-                      );
-                    }).toList(),
-                    onChanged: (value) => setState(() => _selectedAccount = value),
-                    validator: (v) => v == null ? 'Select an account' : null,
-                  );
+
+              // ---------- Account ----------
+              GiveGotAccountField(
+                accountStream: accountProvider?.accountsStream,
+                selectedAccount: _selectedAccount,
+                onChanged: (value) {
+                  setState(() => _selectedAccount = value);
                 },
               ),
+
               const SizedBox(height: 16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Date'),
-                subtitle: Text(
-                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                ),
-                trailing: const Icon(Icons.calendar_today),
+
+              // ---------- Date ----------
+              GiveGotDateField(
+                selectedDate: _selectedDate,
+                accentColor: accentColor,
                 onTap: _pickDate,
               ),
+
               const SizedBox(height: 16),
+
+              // ---------- Description ----------
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                ),
+                cursorColor: accentColor,
+                decoration: InputDecoration(
                   labelText: 'Description (optional)',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(
+                    color: AppTheme.textSecondary,
+                  ),
+                  floatingLabelStyle: TextStyle(
+                    color: accentColor,
+                  ),
+                  hintText: 'Add a note about this transaction',
+                  hintStyle: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                  ),
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.only(bottom: 24),
+                    child: Icon(
+                      Icons.notes_rounded,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  alignLabelWithHint: true,
+                  filled: true,
+                  fillColor: AppTheme.cardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: BorderSide(
+                      color: accentColor,
+                      width: 1.2,
+                    ),
+                  ),
                 ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 32),
+
+              const SizedBox(height: 30),
+
+              // ---------- Save ----------
               SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isSubmitting ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        widget.type == 'GAVE' ? Colors.red : Colors.green,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                height: 54,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: isSubmitting
+                        ? null
+                        : LinearGradient(
+                            colors: isGave
+                                ? [
+                                    AppTheme.expenseDark,
+                                    AppTheme.expense,
+                                  ]
+                                : [
+                                    AppTheme.incomeDark,
+                                    AppTheme.income,
+                                  ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
                           ),
-                        )
-                      : Text(
-                          widget.type == 'GAVE' ? 'Save Gave' : 'Save Got',
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                    color: isSubmitting
+                        ? AppTheme.surface
+                        : null,
+                    borderRadius: BorderRadius.circular(17),
+                    boxShadow: isSubmitting
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: accentColor.withOpacity(0.22),
+                              blurRadius: 18,
+                              spreadRadius: -4,
+                              offset: const Offset(0, 7),
+                            ),
+                          ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: isSubmitting ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      disabledBackgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor: AppTheme.textMuted,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppTheme.textPrimary,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                isGave
+                                    ? Icons.arrow_upward_rounded
+                                    : Icons.arrow_downward_rounded,
+                                size: 19,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isGave
+                                    ? 'Save Gave'
+                                    : 'Save Got',
+                                style: const TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             ],

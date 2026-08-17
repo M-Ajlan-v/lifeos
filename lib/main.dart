@@ -5,6 +5,7 @@ import 'package:lifeos/providers/category_provider.dart';
 import 'package:lifeos/providers/contact_provider.dart';
 import 'package:lifeos/providers/hte_provider.dart';
 import 'package:lifeos/providers/transaction_provider.dart';
+import 'package:lifeos/screens/splash/splash_screen.dart';
 import 'package:lifeos/services/account_service.dart';
 import 'package:lifeos/services/category_service.dart';
 import 'package:lifeos/services/contact_service.dart';
@@ -256,9 +257,7 @@ class MyApp extends StatelessWidget {
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           if (auth.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const SplashScreen();
           }
 
           if (auth.isLoggedIn) {

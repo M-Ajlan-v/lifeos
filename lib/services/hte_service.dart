@@ -129,6 +129,24 @@ class HteService {
     query.orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     return query.get();
   }
+  
+  Stream<List<TodosEvent>> watchTodosEvents(
+    int userId, {
+    String? type,
+  }) {
+    final query = db.select(db.todosEvents)
+      ..where((t) => t.userId.equals(userId));
+
+    if (type != null) {
+      query.where((t) => t.type.equals(type));
+    }
+
+    query.orderBy([
+      (t) => OrderingTerm.desc(t.createdAt),
+    ]);
+
+    return query.watch();
+  }
 
   Future<int> _scheduleTodoEventNotification({
     required int id,
@@ -265,6 +283,19 @@ class HteService {
           ..orderBy([(h) => OrderingTerm.desc(h.createdAt)]))
         .get();
   }
+
+  Stream<List<Habit>> watchActiveHabits(int userId) {
+  return (db.select(db.habits)
+        ..where(
+          (h) =>
+              h.userId.equals(userId) &
+              h.isActive.equals(1),
+        )
+        ..orderBy([
+          (h) => OrderingTerm.desc(h.createdAt),
+        ]))
+      .watch();
+}
 
   Future<List<HabitHistoryData>> getHabitHistory(int habitId) {
     return (db.select(db.habitHistory)
@@ -415,6 +446,18 @@ class HteService {
           ..where((n) => n.userId.equals(userId))
           ..orderBy([(n) => OrderingTerm(expression: n.firedAt, mode: OrderingMode.desc)]))
         .get();
+  }
+  Stream<List<NotificationLogData>>
+      watchFiredNotifications(int userId) {
+    return (db.select(db.notificationLog)
+          ..where((n) => n.userId.equals(userId))
+          ..orderBy([
+            (n) => OrderingTerm(
+                  expression: n.firedAt,
+                  mode: OrderingMode.desc,
+                ),
+          ]))
+        .watch();
   }
 
     /// Call this every time the app starts or resumes.

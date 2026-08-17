@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lifeos/screens/transfers/widget/transfer_empty.dart';
+import 'package:lifeos/screens/transfers/widget/transfer_tile.dart';
 import 'package:provider/provider.dart';
+import 'package:lifeos/constants/theme/app_theme.dart';
 import 'package:lifeos/database/app_database.dart';
 import 'package:lifeos/providers/transaction_provider.dart';
 import 'package:lifeos/services/transaction_service.dart';
-import 'package:lifeos/services/account_service.dart';
-import 'package:lifeos/screens/transactions/transaction_detail_screen.dart';
 import 'add_transfer_screen.dart';
 
 class TransferListScreen extends StatefulWidget {
@@ -42,24 +43,53 @@ class _TransferListScreenState extends State<TransferListScreen> {
 
     if (txProvider == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Transfers')),
-        body: const Center(child: Text('Please login first')),
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(
+          backgroundColor: AppTheme.background,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          title: const Text(
+            'Transfers',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontFamily: 'Outfit',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        body: const Center(
+          child: Text(
+            'Please login first',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontFamily: 'Outfit',
+            ),
+          ),
+        ),
       );
     }
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: _TransferListBody(
         key: ValueKey(_refreshKey),
         txProvider: txProvider,
         onRefresh: () async {
           _forceRefresh();
-          await Future.delayed(const Duration(milliseconds: 400));
+          await Future.delayed(
+            const Duration(milliseconds: 400),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTransfer,
         tooltip: 'Add Transfer',
-        child: const Icon(Icons.add),
+        backgroundColor: AppTheme.violet,
+        foregroundColor: AppTheme.textPrimary,
+        elevation: 8,
+        child: const Icon(
+          Icons.add_rounded,
+        ),
       ),
     );
   }
@@ -79,141 +109,63 @@ class _TransferListBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final txService = context.read<TransactionService>();
 
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: StreamBuilder<List<Transaction>>(
-        stream: txService.watchTransferTransactions(txProvider.userId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final transfers = snapshot.data ?? [];
-
-          if (transfers.isEmpty) {
-            return ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.7,
-                  child: Center(
-                    child: Text(
-                      'No transfers yet',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }
-
-          return ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            itemCount: transfers.length,
-            itemBuilder: (context, index) {
-              final tx = transfers[index];
-              return _TransferTile(transfer: tx);
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _TransferTile extends StatelessWidget {
-  final Transaction transfer;
-
-  const _TransferTile({required this.transfer});
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final accountService = context.read<AccountService>();
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: FutureBuilder<Account?>(
-        future: accountService.getAccountById(
-          userId: transfer.userId,
-          accountId: transfer.accountId,
-        ),
-        builder: (context, fromSnapshot) {
-          final fromAccount = fromSnapshot.data;
-
-          return FutureBuilder<Account?>(
-            future: transfer.toAccountId != null
-                ? accountService.getAccountById(
-                    userId: transfer.userId,
-                    accountId: transfer.toAccountId!,
-                  )
-                : Future.value(null),
-            builder: (context, toSnapshot) {
-              final toAccount = toSnapshot.data;
-
-              return ListTile(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => TransactionDetailScreen(
-                        transactionId: transfer.id,
-                      ),
-                    ),
-                  );
-                },
-                leading: const CircleAvatar(
-                  backgroundColor: Colors.blue,
-                  child: Icon(
-                    Icons.swap_horiz,
-                    color: Colors.white,
-                  ),
-                ),
-                title: Text(
-                  '₹${transfer.amount}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${fromAccount?.name ?? "..."} → ${toAccount?.name ?? "..."}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Text(
-                      _formatDate(transfer.transactionDate),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    if (transfer.description != null &&
-                        transfer.description!.isNotEmpty)
-                      Text(
-                        transfer.description!,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
+    return Container(
+      color: AppTheme.background,
+      child: RefreshIndicator(
+        onRefresh: onRefresh,
+        backgroundColor: AppTheme.cardElevated,
+        color: AppTheme.violetBright,
+        child: StreamBuilder<List<Transaction>>(
+          stream: txService.watchTransferTransactions(
+            txProvider.userId,
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: AppTheme.violetBright,
                 ),
               );
-            },
-          );
-        },
+            }
+
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontFamily: 'Outfit',
+                  ),
+                ),
+              );
+            }
+
+            final transfers = snapshot.data ?? [];
+
+            if (transfers.isEmpty) {
+              return const TransferEmpty();
+            }
+
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                12,
+                16,
+                100,
+              ),
+              itemCount: transfers.length,
+              itemBuilder: (context, index) {
+                final tx = transfers[index];
+
+                return TransferTile(
+                  transfer: tx,
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

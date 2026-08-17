@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lifeos/screens/transfers/widget/cashbook_transfer_account_field.dart';
+import 'package:lifeos/screens/transfers/widget/cashbook_transfer_date_field.dart';
+import 'package:lifeos/screens/transfers/widget/cashbook_transfer_description_field.dart';
 import 'package:provider/provider.dart';
+import 'package:lifeos/constants/theme/app_theme.dart';
 import 'package:lifeos/database/app_database.dart';
 import 'package:lifeos/providers/account_provider.dart';
 import 'package:lifeos/providers/transaction_provider.dart';
@@ -125,34 +129,123 @@ class _AddTransferScreenState extends State<AddTransferScreen> {
     final isSubmitting = txProvider?.isSubmitting ?? false;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Add Transfer'),
+        backgroundColor: AppTheme.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.textPrimary,
+            size: 20,
+          ),
+        ),
+        title: const Text(
+          'Add Transfer',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              32,
+            ),
             children: [
-              // From Account
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.violetGlowGradient,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppTheme.glassBorderStrong,
+                  ),
+                  boxShadow: AppTheme.violetGlow,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppTheme.violet.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppTheme.violetBright.withOpacity(0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.swap_horiz_rounded,
+                        color: AppTheme.violetBright,
+                        size: 27,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Transfer Money',
+                            style: TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontFamily: 'Outfit',
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Move money between your accounts',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontFamily: 'Outfit',
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              const _SectionLabel(
+                icon: Icons.account_balance_wallet_rounded,
+                label: 'ACCOUNTS',
+              ),
+
+              const SizedBox(height: 10),
+
               StreamBuilder<List<Account>>(
                 stream: accountProvider?.accountsStream,
                 builder: (context, snapshot) {
                   final accounts = snapshot.data ?? [];
-                  return DropdownButtonFormField<Account>(
-                    value: _fromAccount,
-                    decoration: const InputDecoration(
-                      labelText: 'From Account *',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: accounts.map((a) {
-                      return DropdownMenuItem(
-                        value: a,
-                        child: Text(
-                          '${a.name} (₹${a.openingBalance})',
-                        ),
-                      );
-                    }).toList(),
+
+                  Account? dropdownValue;
+                  if (_fromAccount != null) {
+                    final matches =
+                        accounts.where((a) => a.id == _fromAccount!.id);
+                    dropdownValue =
+                        matches.isNotEmpty ? matches.first : null;
+                  }
+
+                  return CashbookTransferAccountField(
+                    label: 'From Account *',
+                    value: dropdownValue,
+                    accounts: accounts,
                     onChanged: (value) =>
                         setState(() => _fromAccount = value),
                     validator: (v) =>
@@ -160,27 +253,26 @@ class _AddTransferScreenState extends State<AddTransferScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 16),
 
-              // To Account
+              const SizedBox(height: 14),
+
               StreamBuilder<List<Account>>(
                 stream: accountProvider?.accountsStream,
                 builder: (context, snapshot) {
                   final accounts = snapshot.data ?? [];
-                  return DropdownButtonFormField<Account>(
-                    value: _toAccount,
-                    decoration: const InputDecoration(
-                      labelText: 'To Account *',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: accounts.map((a) {
-                      return DropdownMenuItem(
-                        value: a,
-                        child: Text(
-                          '${a.name} (₹${a.openingBalance})',
-                        ),
-                      );
-                    }).toList(),
+
+                  Account? dropdownValue;
+                  if (_toAccount != null) {
+                    final matches =
+                        accounts.where((a) => a.id == _toAccount!.id);
+                    dropdownValue =
+                        matches.isNotEmpty ? matches.first : null;
+                  }
+
+                  return CashbookTransferAccountField(
+                    label: 'To Account *',
+                    value: dropdownValue,
+                    accounts: accounts,
                     onChanged: (value) =>
                         setState(() => _toAccount = value),
                     validator: (v) =>
@@ -188,15 +280,79 @@ class _AddTransferScreenState extends State<AddTransferScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 16),
 
-              // Amount
+              const SizedBox(height: 24),
+
+              const _SectionLabel(
+                icon: Icons.payments_rounded,
+                label: 'TRANSFER DETAILS',
+              ),
+
+              const SizedBox(height: 10),
+
               TextFormField(
                 controller: _amountController,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: InputDecoration(
                   labelText: 'Amount *',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontFamily: 'Outfit',
+                  ),
+                  floatingLabelStyle: const TextStyle(
+                    color: AppTheme.violetBright,
+                    fontFamily: 'Outfit',
+                  ),
                   prefixText: '₹ ',
+                  prefixStyle: const TextStyle(
+                    color: AppTheme.violetBright,
+                    fontFamily: 'Outfit',
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.cardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppTheme.cardBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppTheme.cardBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppTheme.violetBright,
+                      width: 1.4,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                    ),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                      width: 1.4,
+                    ),
+                  ),
+                  errorStyle: const TextStyle(
+                    color: AppTheme.expense,
+                    fontFamily: 'Outfit',
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
@@ -216,59 +372,122 @@ class _AddTransferScreenState extends State<AddTransferScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
 
-              // Date
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Date'),
-                subtitle: Text(
-                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                ),
-                trailing: const Icon(Icons.calendar_today),
+              const SizedBox(height: 14),
+
+              CashbookTransferDateField(
+                selectedDate: _selectedDate,
                 onTap: _pickDate,
               ),
-              const SizedBox(height: 16),
 
-              // Description
-              TextFormField(
+              const SizedBox(height: 14),
+
+              CashbookTransferDescriptionField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
               ),
-              const SizedBox(height: 32),
 
-              // Save Button
+              const SizedBox(height: 28),
+
               SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isSubmitting ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+                height: AppTheme.buttonHeight,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: isSubmitting
+                        ? null
+                        : AppTheme.buttonGradient,
+                    color: isSubmitting
+                        ? AppTheme.surface
+                        : null,
+                    borderRadius: BorderRadius.circular(
+                      AppTheme.radiusMedium,
+                    ),
+                    boxShadow: isSubmitting
+                        ? null
+                        : AppTheme.violetGlow,
                   ),
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Save Transfer',
-                          style: TextStyle(fontSize: 16),
+                  child: ElevatedButton(
+                    onPressed: isSubmitting ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      disabledBackgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: AppTheme.textPrimary,
+                      disabledForegroundColor: AppTheme.textMuted,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
                         ),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppTheme.violetBright,
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.swap_horiz_rounded,
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Save Transfer',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _SectionLabel({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 2),
+        Icon(
+          icon,
+          size: 14,
+          color: AppTheme.violetBright,
+        ),
+        const SizedBox(width: 7),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.textSecondary,
+            fontFamily: 'Outfit',
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.1,
+          ),
+        ),
+      ],
     );
   }
 }

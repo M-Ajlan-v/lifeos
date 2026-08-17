@@ -13,7 +13,18 @@ class HteProvider extends ChangeNotifier {
   List<TodosEvent> get todosEvents => _todosEvents;
   List<Habit> get habits => _habits;
   List<NotificationLogData> get firedNotifications => _firedNotifications;
+  Stream<List<TodosEvent>> get todosEventsStream {
+  return hteService.watchTodosEvents(userId);
+  }
 
+  Stream<List<Habit>> get habitsStream {
+    return hteService.watchActiveHabits(userId);
+  }
+
+  Stream<List<NotificationLogData>>
+      get firedNotificationsStream {
+    return hteService.watchFiredNotifications(userId);
+  }
   HteProvider({
     required this.hteService,
     required this.userId,
@@ -22,15 +33,33 @@ class HteProvider extends ChangeNotifier {
   }
 
   Future<void> refreshAll() async {
-    await hteService.processMissedHabitDays(userId);
-    await hteService.syncFiredNotifications(userId);   // ← new line
-    _todosEvents = await hteService.getTodosEvents(userId);
-    _habits = await hteService.getActiveHabits(userId);
-    _firedNotifications = await hteService.getFiredNotifications(userId);
-    notifyListeners();
+    try {
+      _todosEvents =
+          await hteService.getTodosEvents(userId);
+      _habits =
+          await hteService.getActiveHabits(userId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('HTE data loading failed: $e');
+    }
+    try {
+      await hteService.processMissedHabitDays(userId);
+    } catch (e) {
+      debugPrint('HTE missed-day processing failed: $e');
+    }
+    try {
+      await hteService.syncFiredNotifications(userId);
+    } catch (e) {
+      debugPrint('HTE notification sync failed: $e');
+    }
+    try {
+      _firedNotifications =
+          await hteService.getFiredNotifications(userId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('HTE notification history failed: $e');
+    }
   }
-
-  // ---------- Todos & Events ----------
 
   Future<void> createTodoEvent({
     required String type,
@@ -49,7 +78,6 @@ class HteProvider extends ChangeNotifier {
       date: date,
       time: time,
     );
-    await refreshAll();
   }
 
   Future<void> updateTodoEvent({
@@ -143,4 +171,150 @@ class HteProvider extends ChangeNotifier {
     );
     await refreshAll();
   }
+
+  List<TodosEvent> getUpcomingEvents(
+  List<TodosEvent> items,
+) {
+  final now = DateTime.now();
+
+  final upcoming = items.where((item) {
+    if (item.type.trim().toUpperCase() != 'EVENT' ||
+        item.date == null) {
+      return false;
+    }
+
+    final date = DateTime.tryParse(item.date!);
+
+    if (date == null) {
+      return false;
+    }
+
+    var hour = 23;
+    var minute = 59;
+
+    if (item.time != null &&
+        item.time!.trim().isNotEmpty) {
+      final parts = item.time!.split(':');
+
+      if (parts.length >= 2) {
+        hour = int.tryParse(parts[0]) ?? 23;
+        minute = int.tryParse(parts[1]) ?? 59;
+      }
+    }
+
+    final dateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+    );
+
+    return dateTime.isAfter(now);
+  }).toList();
+
+  upcoming.sort((a, b) {
+    DateTime parse(TodosEvent item) {
+      final date = DateTime.parse(item.date!);
+
+      var hour = 23;
+      var minute = 59;
+
+      if (item.time != null &&
+          item.time!.trim().isNotEmpty) {
+        final parts = item.time!.split(':');
+
+        if (parts.length >= 2) {
+          hour = int.tryParse(parts[0]) ?? 23;
+          minute = int.tryParse(parts[1]) ?? 59;
+        }
+      }
+
+      return DateTime(
+        date.year,
+        date.month,
+        date.day,
+        hour,
+        minute,
+      );
+    }
+
+    return parse(a).compareTo(parse(b));
+  });
+
+  return upcoming.take(3).toList();
+}
+
+  List<TodosEvent> getUpcomingTodos(
+  List<TodosEvent> items,
+) {
+  final now = DateTime.now();
+
+  final upcoming = items.where((item) {
+    if (item.type.trim().toUpperCase() != 'TODO' ||
+        item.date == null) {
+      return false;
+    }
+
+    final date = DateTime.tryParse(item.date!);
+
+    if (date == null) {
+      return false;
+    }
+
+    var hour = 23;
+    var minute = 59;
+
+    if (item.time != null &&
+        item.time!.trim().isNotEmpty) {
+      final parts = item.time!.split(':');
+
+      if (parts.length >= 2) {
+        hour = int.tryParse(parts[0]) ?? 23;
+        minute = int.tryParse(parts[1]) ?? 59;
+      }
+    }
+
+    final dateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+    );
+
+    return dateTime.isAfter(now);
+  }).toList();
+
+  upcoming.sort((a, b) {
+    DateTime parse(TodosEvent item) {
+      final date = DateTime.parse(item.date!);
+
+      var hour = 23;
+      var minute = 59;
+
+      if (item.time != null &&
+          item.time!.trim().isNotEmpty) {
+        final parts = item.time!.split(':');
+
+        if (parts.length >= 2) {
+          hour = int.tryParse(parts[0]) ?? 23;
+          minute = int.tryParse(parts[1]) ?? 59;
+        }
+      }
+
+      return DateTime(
+        date.year,
+        date.month,
+        date.day,
+        hour,
+        minute,
+      );
+    }
+
+    return parse(a).compareTo(parse(b));
+  });
+
+  return upcoming.take(3).toList();
+}
 }

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:lifeos/providers/hte_provider.dart';
 import 'package:lifeos/database/app_database.dart';
+import 'package:provider/provider.dart';
+
+import 'package:lifeos/constants/theme/app_theme.dart';
+import 'package:lifeos/providers/hte_provider.dart';
+
 import 'add_edit_habit_screen.dart';
-import 'habit_detail_screen.dart';
+import 'widget/habit_empty_state.dart';
+import 'widget/habit_tile.dart';
 
 class HabitScreen extends StatelessWidget {
   const HabitScreen({super.key});
@@ -11,123 +15,101 @@ class HabitScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Habits'),
+        backgroundColor: AppTheme.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        titleSpacing: 16,
+
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AddEditHabitScreen()),
-              );
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                gradient: AppTheme.buttonGradient,
+                borderRadius: BorderRadius.circular(13),
+                boxShadow: AppTheme.violetGlow,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(13),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AddEditHabitScreen(),
+                      ),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.add_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: Consumer<HteProvider?>(
         builder: (context, provider, _) {
           if (provider == null) {
-            return const Center(child: Text('Please login'));
+            return const Center(
+              child: Text(
+                'Please login',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                ),
+              ),
+            );
           }
 
-          final habits = provider.habits;
+          return StreamBuilder<List<Habit>>(
+  stream: provider.habitsStream,
+  builder: (context, snapshot) {
+    if (snapshot.connectionState ==
+            ConnectionState.waiting &&
+        !snapshot.hasData) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
-          if (habits.isEmpty) {
-            return const Center(child: Text('No habits yet'));
-          }
+    final habits =
+        snapshot.data ?? const <Habit>[];
 
-          return ListView.builder(
-            itemCount: habits.length,
-            itemBuilder: (context, index) {
-              final habit = habits[index];
-              return _HabitTile(habit: habit);
-            },
-          );
-        },
+    if (habits.isEmpty) {
+      return const HabitEmptyState();
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        10,
+        16,
+        110,
       ),
+      itemCount: habits.length,
+      itemBuilder: (context, index) {
+        final habit = habits[index];
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: HabitTile(
+            habit: habit,
+          ),
+        );
+      },
     );
-  }
-}
-
-class _HabitTile extends StatelessWidget {
-  final Habit habit;
-
-  const _HabitTile({required this.habit});
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.read<HteProvider?>();
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: ListTile(
-        title: Text(habit.title),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (habit.description != null && habit.description!.isNotEmpty)
-              Text(habit.description!),
-            Text(
-              'Daily at ${habit.time}',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.check_circle_outline, color: Colors.green),
-              tooltip: 'Mark Done today',
-              onPressed: () async {
-                if (provider != null) {
-                  await provider.markHabitDone(habit.id);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Marked as Done for today')),
-                    );
-                  }
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Habit'),
-                    content: const Text(
-                      'This will permanently deactivate the habit.\nHistory will be kept but hidden.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        child: const Text('Delete'),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true && provider != null) {
-                  await provider.deleteHabit(habit.id);
-                }
-              },
-            ),
-          ],
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => HabitDetailScreen(habit: habit),
-            ),
-          );
+  },
+);
         },
       ),
     );

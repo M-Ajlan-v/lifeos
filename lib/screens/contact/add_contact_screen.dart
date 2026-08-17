@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:lifeos/providers/contact_provider.dart';
 import 'package:lifeos/constants/contact_balance_type.dart';
+import 'package:lifeos/constants/theme/app_theme.dart';
+import 'package:lifeos/screens/contact/widget/opening_type_selector.dart';
 
 class AddContactScreen extends StatefulWidget {
   const AddContactScreen({super.key});
@@ -60,7 +62,9 @@ class _AddContactScreenState extends State<AddContactScreen> {
     } else {
       if (_openingType == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select Got or Gave')),
+          const SnackBar(
+            content: Text('Please select Got or Gave'),
+          ),
         );
         return;
       }
@@ -81,8 +85,11 @@ class _AddContactScreenState extends State<AddContactScreen> {
       Navigator.pop(context); // go back to Contact list
     } else {
       final error = contactProvider.error ?? 'Unable to save contact';
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
+        SnackBar(
+          content: Text(error),
+        ),
       );
     }
   }
@@ -93,21 +100,133 @@ class _AddContactScreenState extends State<AddContactScreen> {
     final isSubmitting = contactProvider?.isSubmitting ?? false;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Add Contact'),
+        backgroundColor: AppTheme.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+          leading: IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppTheme.textPrimary,
+              size: 20,
+            ),
+          ),
+        title: const Text(
+          'Add Contact',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: AppTheme.textPrimary,
+        ),
       ),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              28,
+            ),
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
+              // ---------- Header ----------
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.violetGlowGradient,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: AppTheme.glassBorderStrong,
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.person_add_alt_1_rounded,
+                      color: AppTheme.violetBright,
+                      size: 26,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Add a new contact and optionally record an opening balance.',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontFamily: 'Outfit',
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
               // ---------- Name ----------
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                ),
+                cursorColor: AppTheme.violetBright,
+                decoration: InputDecoration(
                   labelText: 'Name *',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(
+                    color: AppTheme.textSecondary,
+                  ),
+                  floatingLabelStyle: const TextStyle(
+                    color: AppTheme.violetBright,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.person_outline_rounded,
+                    color: AppTheme.textSecondary,
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.cardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.violet,
+                      width: 1.2,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                    ),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                    ),
+                  ),
                 ),
                 textCapitalization: TextCapitalization.words,
                 validator: (value) {
@@ -117,15 +236,67 @@ class _AddContactScreenState extends State<AddContactScreen> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
 
               // ---------- Phone ----------
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                ),
+                cursorColor: AppTheme.violetBright,
+                decoration: InputDecoration(
                   labelText: 'Phone *',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(
+                    color: AppTheme.textSecondary,
+                  ),
+                  floatingLabelStyle: const TextStyle(
+                    color: AppTheme.violetBright,
+                  ),
                   hintText: '10 digit mobile number',
+                  hintStyle: const TextStyle(
+                    color: AppTheme.textMuted,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.phone_outlined,
+                    color: AppTheme.textSecondary,
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.cardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.violet,
+                      width: 1.2,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                    ),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.expense,
+                    ),
+                  ),
                 ),
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
@@ -142,15 +313,59 @@ class _AddContactScreenState extends State<AddContactScreen> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
 
               // ---------- Opening Amount ----------
               TextFormField(
                 controller: _amountController,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                cursorColor: AppTheme.violetBright,
+                decoration: InputDecoration(
                   labelText: 'Opening Amount (optional)',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(
+                    color: AppTheme.textSecondary,
+                  ),
+                  floatingLabelStyle: const TextStyle(
+                    color: AppTheme.violetBright,
+                  ),
                   prefixText: '₹ ',
+                  prefixStyle: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontFamily: 'Outfit',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: AppTheme.textSecondary,
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.cardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.violet,
+                      width: 1.2,
+                    ),
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
@@ -158,45 +373,18 @@ class _AddContactScreenState extends State<AddContactScreen> {
                 ],
                 onChanged: _onAmountChanged,
               ),
+
               const SizedBox(height: 16),
 
-              // ---------- Opening Type (Got / Gave) ----------
+              // ---------- Opening Type ----------
               if (_typeEnabled) ...[
-                const Text(
-                  'Opening Type *',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ChoiceChip(
-                        label: const Text('Give'),
-                        selected: _openingType == ContactBalanceType.willGet,
-                        onSelected: (selected) {
-                          setState(() {
-                            _openingType = selected
-                                ? ContactBalanceType.willGet
-                                : null;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ChoiceChip(
-                        label: const Text('Got'),
-                        selected: _openingType == ContactBalanceType.willGive,
-                        onSelected: (selected) {
-                          setState(() {
-                            _openingType = selected
-                                ? ContactBalanceType.willGive
-                                : null;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
+                OpeningTypeSelector(
+                  openingType: _openingType,
+                  onChanged: (value) {
+                    setState(() {
+                      _openingType = value;
+                    });
+                  },
                 ),
                 const SizedBox(height: 16),
               ],
@@ -204,29 +392,123 @@ class _AddContactScreenState extends State<AddContactScreen> {
               // ---------- Description ----------
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                ),
+                cursorColor: AppTheme.violetBright,
+                decoration: InputDecoration(
                   labelText: 'Description (optional)',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(
+                    color: AppTheme.textSecondary,
+                  ),
+                  floatingLabelStyle: const TextStyle(
+                    color: AppTheme.violetBright,
+                  ),
+                  hintText: 'Add a note about this opening balance',
+                  hintStyle: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                  ),
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.only(bottom: 24),
+                    child: Icon(
+                      Icons.notes_rounded,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  alignLabelWithHint: true,
+                  filled: true,
+                  fillColor: AppTheme.cardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      color: AppTheme.violet,
+                      width: 1.2,
+                    ),
+                  ),
                 ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 32),
+
+              const SizedBox(height: 30),
 
               // ---------- Save Button ----------
               SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isSubmitting ? null : _save,
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Save Contact',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                height: 54,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: isSubmitting
+                        ? null
+                        : AppTheme.buttonGradient,
+                    color: isSubmitting
+                        ? AppTheme.surface
+                        : null,
+                    borderRadius: BorderRadius.circular(17),
+                    boxShadow: isSubmitting
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: AppTheme.violet.withOpacity(0.25),
+                              blurRadius: 18,
+                              spreadRadius: -4,
+                              offset: const Offset(0, 7),
+                            ),
+                          ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: isSubmitting ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      disabledBackgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor: AppTheme.textMuted,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              color: AppTheme.textPrimary,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_rounded,
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Save Contact',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             ],
